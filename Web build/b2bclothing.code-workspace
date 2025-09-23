@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../rentify"
+		}
+	],
+	"launch": {
+		"version": "0.2.0",
+		"configurations": []
+	}
+}run android
+cd "/Users/rumunark/Documents/b2b clothing/b2bclothing-mobile"
+npm run android
+
