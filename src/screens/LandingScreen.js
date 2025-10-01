@@ -9,7 +9,7 @@ export default function LandingScreen({ navigation }) {
     <Background>
       <View style={styles.container}>
         <Text style={styles.brand}>b2b clothing</Text>
-        <Text style={styles.tagline}>Swipe - Rent - Wear - Repeat</Text>
+        <Text style={styles.tagline}>Cheaper than buying • Cooler than resale • Greener than fast fashion</Text>
         <View style={{ height: 20 }} />
         <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'Rent' })}>Enter the lineup →</UIButton>
         <View style={{ height: 12 }} />
@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
   bg: { flex: 1 },
   overlay: { },
   container: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
-  brand: { fontSize: 40, fontStyle: 'italic', fontWeight: '800', color: colors.white },
-  tagline: { fontSize: 16, color: colors.white, marginTop: 6 },
+  brand: { fontSize: 40, fontStyle: 'italic', fontWeight: '800', color: colors.white, textAlign: 'center' },
+  tagline: { fontSize: 18, color: colors.white, marginTop: 12, textAlign: 'center', lineHeight: 26, fontWeight: '700' },
   signout: { marginTop: 10, color: colors.white, textDecorationLine: 'underline' },
 });
 

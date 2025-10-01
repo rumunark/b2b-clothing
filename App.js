@@ -11,7 +11,10 @@ import WelcomeScreen from './src/screens/WelcomeScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import AppTabs from './src/navigation/AppTabs';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
-import CategoryGateScreen from './src/screens/CategoryGateScreen';
+import BasketScreen from './src/screens/BasketScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import RentListScreen from './src/screens/RentListScreen';
+import RentSelectScreen from './src/screens/RentSelectScreen';
 
 const AuthStack = createNativeStackNavigator();
 const OnboardingStack = createNativeStackNavigator();
@@ -37,11 +40,13 @@ function OnboardingStackNavigator() {
 
 function AppStackNavigator() {
   return (
-    <AppStack.Navigator>
-      <AppStack.Screen name="Categories" component={CategoryGateScreen} options={{ title: 'Categories' }} />
+    <AppStack.Navigator initialRouteName="Tabs">
       <AppStack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
       <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: 'Item' }} />
       <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ title: 'Edit profile' }} />
+      <AppStack.Screen name="RentSelect" component={RentSelectScreen} options={{ title: 'Rent' }} />
+      <AppStack.Screen name="Basket" component={BasketScreen} options={{ title: 'Basket' }} />
+      <AppStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
     </AppStack.Navigator>
   );
 }

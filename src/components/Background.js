@@ -7,7 +7,7 @@ export default function Background({ children }) {
       style={styles.bg}
       resizeMode="cover"
     >
-      <View style={styles.overlay} />
+      <View style={styles.overlay} pointerEvents="none" />
       {children}
     </ImageBackground>
   );

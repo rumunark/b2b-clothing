@@ -25,7 +25,7 @@ export default function ProfileScreen({ navigation }) {
       const rawDob = profile?.birthday ?? '';
       if (rawDob) {
         const d = new Date(rawDob);
-        const dd = String(d.getDate()).padStart(2, '0');
+        const dd = String(d.getDate()+ 1).padStart(2, '0');
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const yyyy = d.getFullYear();
         setDob(`${dd}/${mm}/${yyyy}`);

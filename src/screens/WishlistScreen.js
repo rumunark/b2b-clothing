@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, SafeAreaView } from 'react-native';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
@@ -13,17 +13,66 @@ export default function WishlistScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setItems([]); return; }
     userIdRef.current = user.id;
-    // Read snapshot fields directly from wishlist (with compatibility aliases)
-    const { data: wl } = await supabase.from('wishlist')
-      .select('item_id, title, image_url, price_per_day, item_name, item_image, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    const rows = (wl || []).map(w => ({
-      id: w.item_id,
-      title: w.title || w.item_name || 'Untitled',
-      image_url: w.image_url || w.item_image || null,
-      price_per_day: w.price_per_day ?? null,
-    }));
+
+    const { data, error } = await supabase
+  .from("wishlist")
+  .select(`
+    listing_id,
+    created_at,
+    items (
+      id,
+      title,
+      image_url,
+      price_per_day
+    )
+  `)
+  .eq("user_id", user.id)
+  .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Wishlist fetch error:", error);
+    setItems([]);
+    return;
+  }
+    // Try mapping via relation first
+    let rows = (data || [])
+      .map(w => {
+        const it = w.items;
+        if (!it) return null;
+        return {
+          id: it.id,
+          title: it.title || 'Untitled',
+          image_url: it.image_url || null,
+          price_per_day: it.price_per_day ?? null,
+        };
+      })
+      .filter(Boolean);
+
+    // If relation not configured (items is null), fallback to fetching by listing_id
+    if ((!rows.length) && (data && data.length)) {
+      const ids = data.map(w => w.listing_id).filter(Boolean);
+      if (ids.length) {
+        const { data: itemsData, error: itemsErr } = await supabase
+          .from('items')
+          .select('id, title, image_url, price_per_day')
+          .in('id', ids);
+        if (itemsErr) {
+          console.error('Items fallback fetch error:', itemsErr);
+          setItems([]);
+          return;
+        }
+        const byId = new Map((itemsData || []).map(it => [it.id, it]));
+        rows = ids
+          .map(id => byId.get(id))
+          .filter(Boolean)
+          .map(it => ({
+            id: it.id,
+            title: it.title || 'Untitled',
+            image_url: it.image_url || null,
+            price_per_day: it.price_per_day ?? null,
+          }));
+      }
+    }
     setItems(rows);
   }, []);
 
@@ -47,7 +96,8 @@ export default function WishlistScreen() {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.container}>
         <Text style={styles.title}>Wishlist</Text>
         <FlatList
           data={items}
@@ -63,13 +113,15 @@ export default function WishlistScreen() {
           )}
           ListEmptyComponent={<Text style={styles.empty}>No items yet.</Text>}
         />
-      </View>
+        </View>
+      </SafeAreaView>
     </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  safe: { flex: 1 },
+  container: { flex: 1, padding: 16, paddingTop: 24 },
   title: { color: colors.white, fontSize: 20, fontWeight: '800', marginBottom: 12 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'center' },
   thumb: { width: 72, height: 72, borderRadius: 8 },
