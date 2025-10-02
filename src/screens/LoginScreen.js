@@ -1,3 +1,10 @@
+/**
+ * User Login Screen
+ * 
+ * Provides authentication interface for existing users to sign into
+ * their B2B Clothing accounts using email and password.
+ */
+
 import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
@@ -7,12 +14,23 @@ import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 import { supabase } from '../lib/supabaseClient';
 
+/**
+ * LoginScreen Component
+ * 
+ * Handles user authentication with email/password validation,
+ * error handling, and loading states during sign-in process.
+ */
 export default function LoginScreen() {
+  // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles user login process
+   * Authenticates user with Supabase Auth and manages loading/error states
+   */
   const onLogin = async () => {
     setLoading(true);
     setError('');

@@ -1,3 +1,11 @@
+/**
+ * User Registration Screen
+ * 
+ * Allows new users to create an account for the B2B Clothing app.
+ * Collects user information including email, password, name, location,
+ * and role (owner or browser). Creates both authentication and profile records.
+ */
+
 import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
@@ -7,15 +15,28 @@ import Input from '../ui/Input';
 import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 
+/**
+ * SignupScreen Component
+ * 
+ * Handles user registration with form validation and error handling.
+ * Creates user authentication record and profile information in Supabase.
+ */
 export default function SignupScreen() {
+  // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [cityOrUni, setCityOrUni] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState(''); // 'owner' or 'browser'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles user registration process
+   * 1. Creates authentication account with Supabase Auth
+   * 2. Creates user profile record with additional information
+   * 3. Handles errors and loading states
+   */
   const onSignup = async () => {
     setLoading(true);
     setError('');

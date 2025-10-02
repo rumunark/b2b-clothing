@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "b2bclothing-mobile",
-    "slug": "b2bclothing-mobile",
+    "slug": "b2b-clothing",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,6 +27,12 @@
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3fe20117-6672-44d9-aa7c-128c97f5e78e"
+      }
+    },
+    "owner": "widdows"
   }
 }
