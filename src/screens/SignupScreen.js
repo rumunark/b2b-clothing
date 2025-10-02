@@ -14,6 +14,7 @@ import Background from '../components/Background';
 import Input from '../ui/Input';
 import Label from '../ui/Label';
 import UIButton from '../ui/Button';
+import UIAlert from '../ui/Alert';
 
 /**
  * SignupScreen Component
@@ -30,6 +31,9 @@ export default function SignupScreen() {
   const [role, setRole] = useState(''); // 'owner' or 'browser'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Alert state for email verification notification
+  const [showEmailAlert, setShowEmailAlert] = useState(false);
 
   /**
    * Handles user registration process
@@ -49,8 +53,25 @@ export default function SignupScreen() {
     const user = data.user;
     if (user) {
       await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city_or_uni: cityOrUni, role });
+      // Show email verification alert after successful signup
+      setShowEmailAlert(true);
     }
     setLoading(false);
+  };
+
+  /**
+   * Handles closing the email verification alert
+   * Resets the form after user acknowledges the email notification
+   */
+  const handleCloseEmailAlert = () => {
+    setShowEmailAlert(false);
+    // Reset form after successful signup
+    setEmail('');
+    setPassword('');
+    setFullName('');
+    setCityOrUni('');
+    setRole('');
+    setError('');
   };
 
   return (
@@ -75,6 +96,15 @@ export default function SignupScreen() {
         <View style={{ height: 16 }} />
         <UIButton variant="solid" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
       </View>
+      
+      {/* Email verification alert */}
+      <UIAlert
+        visible={showEmailAlert}
+        onClose={handleCloseEmailAlert}
+        title="Check Your Email"
+        message={`We've sent a verification link to ${email}. Please check your email and click the link to verify your account. You may need to check your spam folder.`}
+        buttonText="Got it"
+      />
     </Background>
   );
 }
