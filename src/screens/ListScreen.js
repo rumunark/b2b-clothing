@@ -5,6 +5,7 @@ import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import UIButton from '../ui/Button';
 import ListingForm from '../components/ListingForm';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ListScreen({ navigation }) {
   const [title, setTitle] = useState('');
@@ -13,6 +14,7 @@ export default function ListScreen({ navigation }) {
   const [imageUrl, setImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const insets = useSafeAreaInsets();
 
   const onSave = async () => {
     setSaving(true);
@@ -37,7 +39,7 @@ export default function ListScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>List an item</Text>
         <ListingForm onDone={() => navigation.navigate('Tabs', { screen: 'Rent' })} />
       </View>

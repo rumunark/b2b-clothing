@@ -15,6 +15,7 @@ import Input from '../ui/Input';
 import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 import UIAlert from '../ui/Alert';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * SignupScreen Component
@@ -34,6 +35,7 @@ export default function SignupScreen() {
   
   // Alert state for email verification notification
   const [showEmailAlert, setShowEmailAlert] = useState(false);
+  const insets = useSafeAreaInsets();
 
   /**
    * Handles user registration process
@@ -44,7 +46,13 @@ export default function SignupScreen() {
   const onSignup = async () => {
     setLoading(true);
     setError('');
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'b2b-clothing://auth/callback',
+      },
+    });
     if (signUpError) {
       setError(signUpError.message);
       setLoading(false);
@@ -76,7 +84,7 @@ export default function SignupScreen() {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Create your account</Text>
         <Label>Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />

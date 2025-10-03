@@ -3,12 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
 import OutlineCtaButton from '../components/OutlineCtaButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function WelcomeScreen() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>b2b clothing</Text>
         <View style={{ height: 24 }} />
         <OutlineCtaButton title="Sign up" onPress={() => navigation.navigate('Signup')} />

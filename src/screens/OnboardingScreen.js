@@ -4,6 +4,8 @@ import { colors } from '../theme/colors';
 import * as ImagePicker from 'expo-image-picker';
 import Background from '../components/Background';
 import { supabase } from '../lib/supabaseClient';
+import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen() {
   const [fullName, setFullName] = useState('');
@@ -13,6 +15,8 @@ export default function OnboardingScreen() {
   const [avatarUri, setAvatarUri] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const onSave = async () => {
     setSaving(true);
@@ -36,7 +40,11 @@ export default function OnboardingScreen() {
       birthday: birthdayISO,
       avatar_url: avatarUri || null,
     });
-    if (upsertError) setError(upsertError.message);
+    if (upsertError) {
+      setError(upsertError.message);
+    } else {
+      navigation.navigate('AppTabs'); // Navigate to the main app tabs after successful onboarding
+    }
     setSaving(false);
   };
 
@@ -72,7 +80,7 @@ export default function OnboardingScreen() {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Onboarding</Text>
         {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
         <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>

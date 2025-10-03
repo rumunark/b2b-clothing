@@ -14,6 +14,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { supabase } from './src/lib/supabaseClient';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Screen imports for different app sections
 import LoginScreen from './src/screens/LoginScreen';
@@ -152,16 +153,18 @@ export default function App() {
 
   // Render the appropriate navigation stack based on user state
   return (
-    <NavigationContainer>
-      {routeKey === 'Auth' ? (
-        <AuthStackNavigator />
-      ) : routeKey === 'Onboarding' ? (
-        <OnboardingStackNavigator />
-      ) : (
-        <AppStackNavigator />
-      )}
-      <StatusBar style="auto" />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        {routeKey === 'Auth' ? (
+          <AuthStackNavigator />
+        ) : routeKey === 'Onboarding' ? (
+          <OnboardingStackNavigator />
+        ) : (
+          <AppStackNavigator />
+        )}
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 

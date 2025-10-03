@@ -5,11 +5,13 @@ import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BasketScreen() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,7 +96,7 @@ export default function BasketScreen() {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Your basket</Text>
         <FlatList
           data={rows}

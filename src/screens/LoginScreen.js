@@ -13,6 +13,7 @@ import Input from '../ui/Input';
 import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 import { supabase } from '../lib/supabaseClient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * LoginScreen Component
@@ -26,6 +27,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   /**
    * Handles user login process
@@ -41,7 +43,7 @@ export default function LoginScreen() {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Login</Text>
         <Label>Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />

@@ -3,11 +3,13 @@ import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
 import UIButton from '../ui/Button';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function LandingScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.brand}>b2b clothing</Text>
         <Text style={styles.tagline}>Cheaper than buying • Cooler than resale • Greener than fast fashion</Text>
         <View style={{ height: 20 }} />

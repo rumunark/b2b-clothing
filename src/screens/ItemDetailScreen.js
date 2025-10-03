@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import dayjs from 'dayjs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ItemDetailScreen() {
   const route = useRoute();
@@ -22,6 +23,7 @@ export default function ItemDetailScreen() {
   const [customNights, setCustomNights] = useState('');
   const [imgIndex, setImgIndex] = useState(0);
   const [carouselWidth, setCarouselWidth] = useState(0);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const load = async () => {
@@ -91,7 +93,7 @@ export default function ItemDetailScreen() {
   if (!item) {
     return (
       <Background>
-        <View style={styles.center}>
+        <View style={[styles.center, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
           <Text style={{ color: colors.white }}>Loading...</Text>
         </View>
       </Background>
@@ -100,7 +102,7 @@ export default function ItemDetailScreen() {
 
   return (
     <Background>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         {(() => {
           const images = Array.isArray(item.images) && item.images.length > 0 ? item.images : (item.image_url ? [item.image_url] : []);
           if (!images.length) return null;

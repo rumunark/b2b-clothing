@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, RefreshControl, TextInput, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, RefreshControl, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
@@ -7,9 +7,11 @@ import Card from '../ui/Card';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabaseClient';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function RentListScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const inputRef = useRef(null);
   const [items, setItems] = useState([]);
@@ -181,8 +183,7 @@ export default function RentListScreen() {
 
   return (
     <Background>
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <View style={styles.headerRow}>
           <View style={{ width: 1 }} />
           <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -286,8 +287,7 @@ export default function RentListScreen() {
             keyboardShouldPersistTaps="handled"
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         />
-        </View>
-      </SafeAreaView>
+      </View>
     </Background>
   );
 }

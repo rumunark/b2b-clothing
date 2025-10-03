@@ -1,12 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CategoryGateScreen({ navigation }) {
   const go = (cat) => navigation.navigate('Tabs', { screen: 'Rent', params: { category: cat } });
+  const insets = useSafeAreaInsets();
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Choose a category</Text>
         <TouchableOpacity style={styles.btn} onPress={() => go('formalwear')}>
           <Text style={styles.btnText}>Formalwear</Text>

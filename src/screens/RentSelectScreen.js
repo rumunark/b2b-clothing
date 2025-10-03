@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { supabase } from '../lib/supabaseClient';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RentSelectScreen() {
   const route = useRoute();
@@ -15,6 +16,7 @@ export default function RentSelectScreen() {
   const [startDate, setStartDate] = useState(startDateParam || dayjs().format('YYYY-MM-DD'));
   const [nights, setNights] = useState(typeof nightsParam === 'number' ? nightsParam : 3);
   const [customNights, setCustomNights] = useState('');
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const load = async () => {
@@ -40,7 +42,7 @@ export default function RentSelectScreen() {
   if (!item) {
     return (
       <Background>
-        <View style={styles.center}>
+        <View style={[styles.center, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
           <Text style={{ color: colors.white }}>Loading…</Text>
         </View>
       </Background>
@@ -49,7 +51,7 @@ export default function RentSelectScreen() {
 
   return (
     <Background>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>{item.title}</Text>
 
         <Text style={styles.label}>Start date</Text>

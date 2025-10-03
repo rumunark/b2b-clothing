@@ -3,6 +3,7 @@ import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from 'react-n
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
 import { supabase } from '../lib/supabaseClient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -13,6 +14,7 @@ export default function ProfileScreen({ navigation }) {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [numListed, setNumListed] = useState(0);
   const [numRented, setNumRented] = useState(0);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const load = async () => {
@@ -51,7 +53,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Profile</Text>
         {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : null}
         <Text style={styles.value}>{fullName}</Text>

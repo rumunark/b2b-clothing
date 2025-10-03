@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet } from 'react-native';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   return (
     <Background>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Settings</Text>
         <Text style={styles.text}>Coming soon.</Text>
       </View>

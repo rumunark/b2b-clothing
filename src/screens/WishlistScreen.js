@@ -1,13 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function WishlistScreen() {
   const [items, setItems] = useState([]);
   const userIdRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -96,8 +98,7 @@ export default function WishlistScreen() {
 
   return (
     <Background>
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.title}>Wishlist</Text>
         <FlatList
           data={items}
@@ -113,8 +114,7 @@ export default function WishlistScreen() {
           )}
           ListEmptyComponent={<Text style={styles.empty}>No items yet.</Text>}
         />
-        </View>
-      </SafeAreaView>
+      </View>
     </Background>
   );
 }
