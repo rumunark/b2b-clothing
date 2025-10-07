@@ -170,16 +170,11 @@ export default function ListingForm({ onDone }) {
         custom_duration_days: customDurationDays,          // int | null
         insurance_value: insuranceValue ? Number(insuranceValue) : null,
         cleaning_price: cleaningPrice ? Number(cleaningPrice) : null,
+        tags: (tagsInput || '')
+          .split(',')
+          .map((t) => t.trim().toLowerCase())
+          .filter((t) => t.length > 0),
       };
-
-      const tagsArray = (tagsInput || '')
-        .split(',')
-        .map((t) => t.trim().toLowerCase())
-        .filter((t) => t.length > 0);
-      if (tagsArray.length > 0) {
-        payload.tags = tagsArray;
-        payload.tags_text = tagsArray.join(', ');
-      }
 
       const { error: insErr } = await supabase.from('items').insert([payload]);
       if (insErr) throw insErr;

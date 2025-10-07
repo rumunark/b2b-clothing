@@ -19,12 +19,13 @@
 **Rental & Communication Flow**
 *   Build a rental request system with notifications sent to the item owner. [ ]
 *   Create a screen for owners to view, accept, or decline rental requests (Repurpose home screen). [ ]
+*   See active rentals on home screen (details, due date) [ ]
 *   Add an "Enquire Now" button on item detail pages to launch an in-app chat. [ ]
 *   Develop an in-app chat feature for users to coordinate exchanges after an order is confirmed. [ ]
 *   Requests to rent show up on home page where they await to be approved or denied [ ]
 
-**App Features**
-*   
+**Other Features**
+*   Rate a seller/buyer after completing a rental [ ]
 
 ## Future Features
 
