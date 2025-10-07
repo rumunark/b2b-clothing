@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function WishlistScreen() {
   const [items, setItems] = useState([]);
   const userIdRef = useRef(null);
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
 
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -99,18 +100,18 @@ export default function WishlistScreen() {
   return (
     <Background>
       <View style={[styles.container]}>
-        <Text style={styles.title}>Wishlist</Text>
+        {/* <Text style={styles.title}>Wishlist</Text> */}
         <FlatList
           data={items}
           keyExtractor={(it) => String(it.id)}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <TouchableOpacity onPress={() => navigation.navigate('ItemDetail', { id: item.id })} style={styles.row}>
               {item.image_url ? <Image source={{ uri: item.image_url }} style={styles.thumb} /> : null}
               <View style={{ flex: 1 }}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
                 {item.price_per_day != null ? <Text style={styles.price}>£{Number(item.price_per_day).toFixed(2)} / day</Text> : null}
               </View>
-            </View>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={<Text style={styles.empty}>No items yet.</Text>}
         />

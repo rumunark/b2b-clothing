@@ -48,7 +48,7 @@ export default function ListScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1 },
   // title: { fontSize: 20, fontWeight: '800', color: colors.white, marginBottom: 12 },
   input: { backgroundColor: 'rgba(255,255,255,0.95)', padding: 12, borderRadius: 8, marginBottom: 12 },
   error: { color: colors.white, marginBottom: 12 },

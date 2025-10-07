@@ -73,19 +73,8 @@ function OnboardingStackNavigator() {
 function AppStackNavigator() {
   return (
     <AppStack.Navigator initialRouteName="Tabs">
-      <AppStack.Screen
-        name="Tabs"
-        component={AppTabs}
-        options={({ route }) => ({
-          headerShown: true,
-          header: ({ route }) => {
-            const focusedRoute = route.state?.routes[route.state.index];
-            const headerTitle = focusedRoute?.options?.headerTitle || focusedRoute?.name || 'Home';
-            return <HeaderBar title={headerTitle} showIcons={true} />;
-          },
-        })}
-      />
-      <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: 'Item' }} />
+      <AppStack.Screen name="Tabs" component={AppTabs} options={{headerShown: false,}}/>
+      <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title={route.params?.itemTitle || 'Item'} showBack={true} showIcons={false} /> })}/>
       <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ title: 'Edit profile' }} />
       <AppStack.Screen name="RentSelect" component={RentSelectScreen} options={{ title: 'Rent' }} />
       <AppStack.Screen name="Basket" component={BasketScreen} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
