@@ -102,7 +102,7 @@ export default function ItemDetailScreen() {
 
   return (
     <Background>
-      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: insets.bottom }]}>
         {(() => {
           const images = Array.isArray(item.images) && item.images.length > 0 ? item.images : (item.image_url ? [item.image_url] : []);
           if (!images.length) return null;

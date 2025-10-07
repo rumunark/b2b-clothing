@@ -7,8 +7,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>Settings</Text>
+      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
         <Text style={styles.text}>Coming soon.</Text>
       </View>
     </Background>
@@ -17,7 +16,6 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  title: { color: colors.white, fontSize: 20, fontWeight: '800', marginBottom: 12 },
   text: { color: colors.white },
 });
 

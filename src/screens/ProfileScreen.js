@@ -27,7 +27,7 @@ export default function ProfileScreen({ navigation }) {
       const rawDob = profile?.birthday ?? '';
       if (rawDob) {
         const d = new Date(rawDob);
-        const dd = String(d.getDate()+ 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const yyyy = d.getFullYear();
         setDob(`${dd}/${mm}/${yyyy}`);
@@ -53,8 +53,8 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>Profile</Text>
+      <View style={[styles.container, {}]}>
+        {/* <Text style={styles.title}>Profile</Text> */}
         {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : null}
         <Text style={styles.value}>{fullName}</Text>
         <Text style={styles.value}>{email}</Text>

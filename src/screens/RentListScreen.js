@@ -107,7 +107,7 @@ export default function RentListScreen() {
 
   const renderItem = ({ item }) => (
     hidden.has(item.id) ? null : (
-      <Card>
+      <Card style={{ marginBottom: 12 }}>
         <View style={styles.imageWrap}>
           <View
             style={{ flex: 1 }}
@@ -183,41 +183,32 @@ export default function RentListScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <View style={styles.headerRow}>
-          <View style={{ width: 1 }} />
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Basket')}>
-              <Ionicons name="cart" size={22} color={colors.white} />
+      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+        <View style={[styles.headerBox, { }]}>
+          <View style={styles.searchAndFilterContainer}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.searchRow}
+              onPress={() => inputRef.current?.focus?.()}
+            >
+              <Ionicons name="search" size={18} color={colors.white} />
+              <TextInput
+                ref={inputRef}
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search by tags…"
+                placeholderTextColor={colors.gray100}
+                style={styles.searchInput}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                returnKeyType="search"
+              />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-              <Ionicons name="settings-outline" size={22} color={colors.white} />
+            <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilters((v) => !v)}>
+              <Ionicons name={showFilters ? 'options' : 'options-outline'} size={16} color={colors.white} />
+              <Text style={styles.filterBtnText}>{showFilters ? 'Hide filters' : 'Filters'}</Text>
             </TouchableOpacity>
           </View>
-        </View>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          style={styles.searchRow}
-          onPress={() => inputRef.current?.focus?.()}
-        >
-          <Ionicons name="search" size={18} color={colors.white} />
-          <TextInput
-            ref={inputRef}
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search by tags…"
-            placeholderTextColor={colors.gray100}
-            style={styles.searchInput}
-              autoCorrect={false}
-              autoCapitalize="none"
-            returnKeyType="search"
-          />
-        </TouchableOpacity>
-        <View style={styles.filtersWrap}>
-          <TouchableOpacity style={styles.filterBtn} onPress={() => setShowFilters((v) => !v)}>
-            <Ionicons name={showFilters ? 'options' : 'options-outline'} size={16} color={colors.white} />
-            <Text style={styles.filterBtnText}>{showFilters ? 'Hide filters' : 'Filters'}</Text>
-          </TouchableOpacity>
           {showFilters ? (
             <View style={styles.filtersPanel}>
               <Text style={styles.filterLabel}>Category</Text>
@@ -292,15 +283,16 @@ export default function RentListScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  container: { flex: 1, backgroundColor: colors.navy, paddingTop: 8 },
+  headerBox: { backgroundColor: colors.navy, paddingBottom: 12 },
   empty: { textAlign: 'center', marginTop: 24, color: colors.white },
-  searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, margin: 12, borderRadius: 8, borderWidth: 1, borderColor: '#334' },
-  headerRow: { paddingHorizontal: 12, paddingTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  searchRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: '#334' },
   searchInput: { flex: 1, color: colors.white },
+  searchAndFilterContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 12, marginBottom: 0, gap: 8 },
   filtersWrap: { marginHorizontal: 12, marginBottom: 4 },
-  filterBtn: { alignSelf: 'flex-start', flexDirection: 'row', gap: 6, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: '#334' },
+  filterBtn: { flexDirection: 'row', gap: 6, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: '#334' },
   filterBtnText: { color: colors.white, fontWeight: '700' },
   filtersPanel: { marginTop: 8, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#334', gap: 6 },
   filterLabel: { color: colors.white, fontWeight: '700' },
@@ -318,8 +310,8 @@ const styles = StyleSheet.create({
   dotActive: { backgroundColor: '#fff' },
   actionsRow: { position: 'absolute', bottom: 8, right: 8, flexDirection: 'row', gap: 8 },
   actionBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-    actionBtnOutline: { borderWidth: 2, borderColor: '#fff', backgroundColor: 'rgba(0,0,0,0.35)' },
- actionBtnSolid: { backgroundColor: '#fff' },
+  actionBtnOutline: { borderWidth: 2, borderColor: '#fff', backgroundColor: 'rgba(0,0,0,0.35)' },
+  actionBtnSolid: { backgroundColor: '#fff' },
   title: { marginTop: 8, fontWeight: '700', color: colors.navy },
   desc: { color: colors.gray500, fontSize: 12 },
   price: { marginTop: 4, fontSize: 12, color: colors.navy },

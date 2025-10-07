@@ -9,6 +9,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import HeaderBar from '../components/HeaderBar';
 
 // Screen imports for each tab
 import LandingScreen from '../screens/LandingScreen';
@@ -33,7 +34,8 @@ export default function AppTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false, // Hide the default header
+        headerShown: true,
+        header: ({ route, options }) => <HeaderBar title={options.title || route.name} showIcons={true} />,
         tabBarStyle: { 
           backgroundColor: colors.navy, // Navy background for tab bar
           borderTopColor: colors.navy // Remove default border
@@ -52,7 +54,8 @@ export default function AppTabs() {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } else if (route.name === 'Wishlist') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'Profile') {
+          }
+          else if (route.name === 'Profile') {
             iconName = focused ? 'person-circle' : 'person-circle-outline';
           }
           
@@ -60,11 +63,11 @@ export default function AppTabs() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={LandingScreen} />
-      <Tab.Screen name="Rent" component={RentListScreen} />
-      <Tab.Screen name="List" component={ListScreen} />
-      <Tab.Screen name="Wishlist" component={WishlistScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={LandingScreen} options={{ title: 'Home' }} />
+      <Tab.Screen name="Rent" component={RentListScreen} options={{ title: 'Rent' }} />
+      <Tab.Screen name="List" component={ListScreen} options={{ title: 'List an item' }} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ title: 'Wishlist' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );
 }
