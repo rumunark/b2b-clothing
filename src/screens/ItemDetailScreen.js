@@ -15,6 +15,7 @@ export default function ItemDetailScreen() {
   const [item, setItem] = useState(null);
   const [ratingAvg, setRatingAvg] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   // rent picker state
   const [showRent, setShowRent] = useState(false);
@@ -44,6 +45,22 @@ export default function ItemDetailScreen() {
         setRatingAvg(avg);
         setRatingCount(count);
       }
+
+      // Check wishlist status
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && it?.id) {
+        const { data: wishlistEntry, error: wishlistError } = await supabase
+          .from('wishlist')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('listing_id', it.id)
+          .maybeSingle();
+        if (wishlistError) {
+          console.error('Error fetching wishlist status:', wishlistError);
+        } else {
+          setIsWishlisted(!!wishlistEntry);
+        }
+      }
     };
     if (id) load();
   }, [id]);
@@ -56,17 +73,39 @@ export default function ItemDetailScreen() {
     return total.toFixed(2);
   }, [pricePerDay, effectiveNights, cleaningFee]);
 
-  const addToWishlist = async () => {
+  const toggleWishlist = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { Alert.alert('Sign in required', 'Please log in first.'); return; }
-    const { error } = await supabase
-      .from('wishlist')
-      .insert({ user_id: user.id, listing_id: item.id });
-    if (error) {
-      Alert.alert('Wishlist error', error.message);
-      return;
+
+    if (!item?.id) { return; }
+
+    if (isWishlisted) {
+      // Remove from wishlist
+      const { error } = await supabase
+        .from('wishlist')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('listing_id', item.id);
+
+      if (error) {
+        Alert.alert('Wishlist error', error.message);
+      } else {
+        setIsWishlisted(false);
+        Alert.alert('Removed from wishlist', 'The item has been removed from your wishlist.');
+      }
+    } else {
+      // Add to wishlist
+      const { error } = await supabase
+        .from('wishlist')
+        .insert({ user_id: user.id, listing_id: item.id });
+
+      if (error) {
+        Alert.alert('Wishlist error', error.message);
+      } else {
+        setIsWishlisted(true);
+        Alert.alert('Added to wishlist', 'You can view it in Wishlist.');
+      }
     }
-    Alert.alert('Added to wishlist', 'You can view it in Wishlist.');
   };
 
   const addToBasket = async () => {
@@ -151,9 +190,9 @@ export default function ItemDetailScreen() {
         </View>
 
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.wishBtn} onPress={addToWishlist}>
-            <Ionicons name="heart" size={18} color="#0B1F3A" />
-            <Text style={styles.wishText}>Add to wishlist</Text>
+          <TouchableOpacity style={styles.wishBtn} onPress={toggleWishlist}>
+            <Ionicons name="heart" size={18} color={isWishlisted ? colors.pink : colors.navy} />
+            <Text style={styles.wishText}>{isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.rentBtn} onPress={() => setShowRent((v) => !v)}>
             <Ionicons name="cart-outline" size={18} color="#000" />

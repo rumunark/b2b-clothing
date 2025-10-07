@@ -19,6 +19,7 @@ export const colors = {
   white: '#FFFFFF',
   gray100: '#F7F7F7',  // Light gray for subtle backgrounds
   gray500: '#6B7280',  // Medium gray for secondary text
+  pink: '#FF69B4', // Added pink color for wishlist
 };
 
 

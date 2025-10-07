@@ -14,7 +14,7 @@
 *   Create a functional shopping basket. [ ]
 *   Integrate Stripe for payment processing. [ ]
 *   Add a "quick add to basket" button on items. [ ]
-*   Implement a "quick add to Wishlist" button on items. [ ]
+*   Implement a "quick add to Wishlist" button on items. [x]
 
 **Rental & Communication Flow**
 *   Build a rental request system with notifications sent to the item owner. [ ]

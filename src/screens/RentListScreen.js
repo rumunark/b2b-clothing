@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, RefreshControl, TextInput, ScrollView } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, RefreshControl, TextInput, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
@@ -27,6 +27,7 @@ export default function RentListScreen() {
   const [filterSize, setFilterSize] = useState('');
   const [filterPriceMin, setFilterPriceMin] = useState('');
   const [filterPriceMax, setFilterPriceMax] = useState('');
+  const [wishlistItems, setWishlistItems] = useState(new Set());
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -47,6 +48,21 @@ export default function RentListScreen() {
     } else {
       list = data ?? [];
     }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: wishlistData, error: wishlistError } = await supabase
+        .from('wishlist')
+        .select('listing_id')
+        .eq('user_id', user.id);
+
+      if (wishlistError) {
+        console.error('Error fetching wishlist:', wishlistError);
+      } else if (wishlistData) {
+        setWishlistItems(new Set(wishlistData.map(item => item.listing_id)));
+      }
+    }
+
     setAllItems(list);
     setItems(list); // show all items by default
     setLoading(false);
@@ -98,6 +114,40 @@ export default function RentListScreen() {
     });
     setItems(filtered);
   }, [query, allItems, filterCategory, filterSize, filterPriceMin, filterPriceMax]);
+
+  const toggleWishlist = useCallback(async (item) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { Alert.alert('Sign in required', 'Please log in first.'); return; }
+
+    const isWishlisted = wishlistItems.has(item.id);
+    if (isWishlisted) {
+      // Remove from wishlist
+      const { error } = await supabase
+        .from('wishlist')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('listing_id', item.id);
+
+      if (error) {
+        Alert.alert('Wishlist error', error.message);
+      } else {
+        setWishlistItems(prev => { const next = new Set(prev); next.delete(item.id); return next; });
+        Alert.alert('Removed from wishlist', 'The item has been removed from your wishlist.');
+      }
+    } else {
+      // Add to wishlist
+      const { error } = await supabase.from('wishlist').upsert({
+        user_id: user.id, listing_id: item.id,
+      }, { onConflict: 'user_id,listing_id' });
+
+      if (error) {
+        Alert.alert('Wishlist error', error.message);
+      } else {
+        setWishlistItems(prev => { const next = new Set(prev); next.add(item.id); return next; });
+        Alert.alert('Added to wishlist', 'You can view it in Wishlist.');
+      }
+    }
+  }, [wishlistItems]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -154,16 +204,9 @@ export default function RentListScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionBtn, styles.actionBtnSolid]}
-              onPress={async () => {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-                await supabase.from('wishlist').upsert({
-                  user_id: user.id, item_id: item.id,
-                  title: item.title, image_url: item.image_url, price_per_day: item.price_per_day
-                }, { onConflict: 'user_id,item_id' }).catch(()=>{});
-              }}
+              onPress={() => toggleWishlist(item)}
             >
-              <Ionicons name="heart" size={20} color="#0B1F3A" />
+              <Ionicons name="heart" size={20} color={wishlistItems.has(item.id) ? colors.pink : "#0B1F3A"} />
             </TouchableOpacity>
           </View>
          </View>
