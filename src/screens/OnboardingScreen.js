@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,6 +16,37 @@ export default function OnboardingScreen() {
   const [saving, setSaving] = useState(false);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    async function fetchUserProfile() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { return; }
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select(`full_name, city_or_uni, birthday, avatar_url`)
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (profile) {
+        setFullName(profile.full_name || '');
+        setCityOrUni(profile.city_or_uni || '');
+        if (profile.birthday) {
+          // Convert YYYY-MM-DD to DD/MM/YYYY for display
+          const [yyyy, mm, dd] = profile.birthday.split('-');
+          setDob(`${dd}/${mm}/${yyyy}`);
+        }
+        setAvatarUri(profile.avatar_url || '');
+      }
+    }
+
+    fetchUserProfile();
+  }, []);
 
   const onSave = async () => {
     setSaving(true);
@@ -84,7 +115,7 @@ export default function OnboardingScreen() {
         <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
         <TextInput style={styles.input} placeholder="City or University" value={cityOrUni} onChangeText={setCityOrUni} />
-        <TextInput style={styles.input} placeholder="DOB (YYYY-MM-DD)" value={dob} onChangeText={setDob} />
+        <TextInput style={styles.input} placeholder="DOB (DD/MM/YYYY)" value={dob} onChangeText={setDob} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button title={saving ? 'Saving...' : 'Save'} onPress={onSave} disabled={saving} />
       </View>
