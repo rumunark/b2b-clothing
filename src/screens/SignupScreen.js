@@ -16,6 +16,7 @@ import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 import UIAlert from '../ui/Alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 /**
  * SignupScreen Component
@@ -27,6 +28,8 @@ export default function SignupScreen() {
   // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [cityOrUni, setCityOrUni] = useState('');
   const [error, setError] = useState('');
@@ -35,6 +38,16 @@ export default function SignupScreen() {
   // Alert state for email verification notification
   const [showEmailAlert, setShowEmailAlert] = useState(false);
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+
+  const isStrongPassword = (pw) => {
+    const value = String(pw || '');
+    const hasMinLength = value.length >= 8;
+    const hasUpper = /[A-Z]/.test(value);
+    const hasLower = /[a-z]/.test(value);
+    const hasNumberOrSymbol = /[0-9]/.test(value) || /[^A-Za-z0-9]/.test(value);
+    return hasMinLength && hasUpper && hasLower && hasNumberOrSymbol;
+  };
 
   /**
    * Handles user registration process
@@ -45,6 +58,22 @@ export default function SignupScreen() {
   const onSignup = async () => {
     setLoading(true);
     setError('');
+    // Validate re-entered email and password before attempting signup
+    if ((email || '').trim().toLowerCase() !== (confirmEmail || '').trim().toLowerCase()) {
+      setError('Email addresses do not match');
+      setLoading(false);
+      return;
+    }
+    if ((password || '') !== (confirmPassword || '')) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+    if (!isStrongPassword(password)) {
+      setError('Password must be at least 8 characters, include upper and lower case letters, and at least one number or symbol.');
+      setLoading(false);
+      return;
+    }
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -74,10 +103,13 @@ export default function SignupScreen() {
     setShowEmailAlert(false);
     // Reset form after successful signup
     setEmail('');
+    setConfirmEmail('');
     setPassword('');
+    setConfirmPassword('');
     setFullName('');
     setCityOrUni('');
     setError('');
+    navigation.navigate('Welcome');
   };
 
   return (
@@ -87,8 +119,14 @@ export default function SignupScreen() {
         <Label>Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />
         <View style={{ height: 8 }} />
-        <Label>Password</Label>
+        <Label>Confirm Email</Label>
+        <Input placeholder="you@example.com" autoCapitalize="none" value={confirmEmail} onChangeText={setConfirmEmail} />
+        <View style={{ height: 8 }} />
+        <Label>Password - </Label>
         <Input placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
+        <View style={{ height: 8 }} />
+        <Label>Confirm Password</Label>
+        <Input placeholder="••••••••" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
         <View style={{ height: 8 }} />
         <Label>Full name</Label>
         <Input value={fullName} onChangeText={setFullName} />
