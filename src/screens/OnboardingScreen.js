@@ -72,7 +72,7 @@ export default function OnboardingScreen() {
     if (upsertError) {
       setError(upsertError.message);
     } else {
-      navigation.navigate('LandingScreen'); // Navigate to the main app tabs after successful onboarding
+      await supabase.auth.refreshSession(); // Navigate to the main app tabs after successful onboarding
     }
     setSaving(false);
   };
