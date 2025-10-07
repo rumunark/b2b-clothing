@@ -2,8 +2,8 @@
  * User Registration Screen
  * 
  * Allows new users to create an account for the B2B Clothing app.
- * Collects user information including email, password, name, location,
- * and role (owner or browser). Creates both authentication and profile records.
+ * Collects user information including email, password, name, and location.
+ * Creates both authentication and profile records.
  */
 
 import { useState } from 'react';
@@ -29,7 +29,6 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [cityOrUni, setCityOrUni] = useState('');
-  const [role, setRole] = useState(''); // 'owner' or 'browser'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -60,7 +59,7 @@ export default function SignupScreen() {
     }
     const user = data.user;
     if (user) {
-      await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city_or_uni: cityOrUni, role });
+      await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city_or_uni: cityOrUni });
       // Show email verification alert after successful signup
       setShowEmailAlert(true);
     }
@@ -78,7 +77,6 @@ export default function SignupScreen() {
     setPassword('');
     setFullName('');
     setCityOrUni('');
-    setRole('');
     setError('');
   };
 
@@ -98,10 +96,7 @@ export default function SignupScreen() {
         <Label>City or University</Label>
         <Input value={cityOrUni} onChangeText={setCityOrUni} />
         <View style={{ height: 8 }} />
-        <Label>Role (owner or browser)</Label>
-        <Input value={role} onChangeText={setRole} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <View style={{ height: 16 }} />
         <UIButton variant="solid" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
       </View>
       

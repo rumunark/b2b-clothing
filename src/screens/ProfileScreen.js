@@ -22,7 +22,7 @@ export default function ProfileScreen({ navigation }) {
       setEmail(user?.email ?? '');
       setUserId(user?.id ?? '');
       if (!user) return;
-      const { data: profile } = await supabase.from('profiles').select('full_name, city_or_uni, role, birthday, avatar_url').eq('id', user.id).maybeSingle();
+      const { data: profile } = await supabase.from('profiles').select('full_name, city_or_uni, birthday, avatar_url').eq('id', user.id).maybeSingle();
       setFullName(profile?.full_name ?? '');
       const rawDob = profile?.birthday ?? '';
       if (rawDob) {

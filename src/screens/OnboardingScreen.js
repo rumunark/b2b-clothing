@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function OnboardingScreen() {
   const [fullName, setFullName] = useState('');
   const [cityOrUni, setCityOrUni] = useState('');
-  const [role, setRole] = useState('');
   const [dob, setDob] = useState('');
   const [avatarUri, setAvatarUri] = useState('');
   const [error, setError] = useState('');
@@ -36,14 +35,13 @@ export default function OnboardingScreen() {
       id: user.id,
       full_name: fullName,
       city_or_uni: cityOrUni,
-      role,
       birthday: birthdayISO,
       avatar_url: avatarUri || null,
     });
     if (upsertError) {
       setError(upsertError.message);
     } else {
-      navigation.navigate('AppTabs'); // Navigate to the main app tabs after successful onboarding
+      navigation.navigate('LandingScreen'); // Navigate to the main app tabs after successful onboarding
     }
     setSaving(false);
   };
@@ -86,7 +84,6 @@ export default function OnboardingScreen() {
         <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
         <TextInput style={styles.input} placeholder="City or University" value={cityOrUni} onChangeText={setCityOrUni} />
-        <TextInput style={styles.input} placeholder="Role: owner or browser" value={role} onChangeText={setRole} />
         <TextInput style={styles.input} placeholder="DOB (YYYY-MM-DD)" value={dob} onChangeText={setDob} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button title={saving ? 'Saving...' : 'Save'} onPress={onSave} disabled={saving} />
