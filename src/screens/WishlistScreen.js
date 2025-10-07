@@ -98,7 +98,7 @@ export default function WishlistScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={[styles.container]}>
         <Text style={styles.title}>Wishlist</Text>
         <FlatList
           data={items}
@@ -121,7 +121,7 @@ export default function WishlistScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  container: { flex: 1, padding: 16, paddingTop: 24 },
+  container: { flex: 1, padding: 16 },
   title: { color: colors.white, fontSize: 20, fontWeight: '800', marginBottom: 12 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'center' },
   thumb: { width: 72, height: 72, borderRadius: 8 },

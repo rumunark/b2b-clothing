@@ -96,8 +96,7 @@ export default function BasketScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>Your basket</Text>
+      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
         <FlatList
           data={rows}
           keyExtractor={(r) => String(r.id)}
@@ -133,7 +132,6 @@ export default function BasketScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  title: { color: colors.white, fontSize: 20, fontWeight: '800', marginBottom: 12 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'center' },
   thumb: { width: 72, height: 72, borderRadius: 8 },
   itemTitle: { color: colors.white, fontWeight: '700' },

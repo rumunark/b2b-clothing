@@ -53,7 +53,7 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={[styles.container, {}]}>
         <Text style={styles.title}>Profile</Text>
         {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : null}
         <Text style={styles.value}>{fullName}</Text>

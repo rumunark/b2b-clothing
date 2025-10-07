@@ -10,7 +10,7 @@
 
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { supabase } from './src/lib/supabaseClient';
@@ -28,6 +28,7 @@ import BasketScreen from './src/screens/BasketScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import RentListScreen from './src/screens/RentListScreen';
 import RentSelectScreen from './src/screens/RentSelectScreen';
+import HeaderBar from './src/components/HeaderBar';
 
 // Create stack navigators for different app sections
 const AuthStack = createNativeStackNavigator();
@@ -72,12 +73,23 @@ function OnboardingStackNavigator() {
 function AppStackNavigator() {
   return (
     <AppStack.Navigator initialRouteName="Tabs">
-      <AppStack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
+      <AppStack.Screen
+        name="Tabs"
+        component={AppTabs}
+        options={({ route }) => ({
+          headerShown: true,
+          header: ({ route }) => {
+            const focusedRoute = route.state?.routes[route.state.index];
+            const headerTitle = focusedRoute?.options?.headerTitle || focusedRoute?.name || 'Home';
+            return <HeaderBar title={headerTitle} showIcons={true} />;
+          },
+        })}
+      />
       <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: 'Item' }} />
       <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ title: 'Edit profile' }} />
       <AppStack.Screen name="RentSelect" component={RentSelectScreen} options={{ title: 'Rent' }} />
-      <AppStack.Screen name="Basket" component={BasketScreen} options={{ title: 'Basket' }} />
-      <AppStack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+      <AppStack.Screen name="Basket" component={BasketScreen} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
     </AppStack.Navigator>
   );
 }

@@ -183,18 +183,7 @@ export default function RentListScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <View style={styles.headerRow}>
-          <View style={{ width: 1 }} />
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Basket')}>
-              <Ionicons name="cart" size={22} color={colors.white} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-              <Ionicons name="settings-outline" size={22} color={colors.white} />
-            </TouchableOpacity>
-          </View>
-        </View>
+      <View style={[styles.container, { paddingTop: insets.top  }]}>
         <TouchableOpacity
           activeOpacity={0.9}
           style={styles.searchRow}
@@ -297,7 +286,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.navy, paddingTop: 8 },
   empty: { textAlign: 'center', marginTop: 24, color: colors.white },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, margin: 12, borderRadius: 8, borderWidth: 1, borderColor: '#334' },
-  headerRow: { paddingHorizontal: 12, paddingTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   searchInput: { flex: 1, color: colors.white },
   filtersWrap: { marginHorizontal: 12, marginBottom: 4 },
   filterBtn: { alignSelf: 'flex-start', flexDirection: 'row', gap: 6, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: '#334' },

@@ -25,7 +25,7 @@ export default function ListScreen({ navigation }) {
       setSaving(false);
       return;
     }
-    const payload: any = {
+    const payload = {
       title,
       description,
       price_per_day: Number(pricePerDay) || null,
@@ -39,8 +39,8 @@ export default function ListScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>List an item</Text>
+      <View style={[styles.container, {}]}>
+        {/* <Text style={styles.title}>List an item</Text> */}
         <ListingForm onDone={() => navigation.navigate('Tabs', { screen: 'Rent' })} />
       </View>
     </Background>
@@ -49,7 +49,7 @@ export default function ListScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-  title: { fontSize: 20, fontWeight: '800', color: colors.white, marginBottom: 12 },
+  // title: { fontSize: 20, fontWeight: '800', color: colors.white, marginBottom: 12 },
   input: { backgroundColor: 'rgba(255,255,255,0.95)', padding: 12, borderRadius: 8, marginBottom: 12 },
   error: { color: colors.white, marginBottom: 12 },
 });

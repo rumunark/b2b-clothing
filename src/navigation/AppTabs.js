@@ -9,6 +9,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import HeaderBar from '../components/HeaderBar';
 
 // Screen imports for each tab
 import LandingScreen from '../screens/LandingScreen';
@@ -33,7 +34,6 @@ export default function AppTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false, // Hide the default header
         tabBarStyle: { 
           backgroundColor: colors.navy, // Navy background for tab bar
           borderTopColor: colors.navy // Remove default border
@@ -60,11 +60,11 @@ export default function AppTabs() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={LandingScreen} />
-      <Tab.Screen name="Rent" component={RentListScreen} />
-      <Tab.Screen name="List" component={ListScreen} />
-      <Tab.Screen name="Wishlist" component={WishlistScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={LandingScreen} options={{ headerShown: false, headerTitle: 'Home' }} />
+      <Tab.Screen name="Rent" component={RentListScreen} options={{ headerShown: false, headerTitle: 'Rent' }} />
+      <Tab.Screen name="List" component={ListScreen} options={{ headerShown: false, headerTitle: 'List an item' }} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ headerShown: false, headerTitle: 'Wishlist' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false, headerTitle: 'Profile' }} />
     </Tab.Navigator>
   );
 }
