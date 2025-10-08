@@ -6,8 +6,8 @@
  * Creates both authentication and profile records.
  */
 
-import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Modal, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
@@ -15,6 +15,7 @@ import Input from '../ui/Input';
 import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 import UIAlert from '../ui/Alert';
+import Dropdown from '../ui/Dropdown'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -31,7 +32,7 @@ export default function SignupScreen() {
   const [confirmEmail, setConfirmEmail] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [cityOrUni, setCityOrUni] = useState('');
+  const [city, setCity] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -88,13 +89,13 @@ export default function SignupScreen() {
     }
     const user = data.user;
     if (user) {
-      await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city_or_uni: cityOrUni });
+      await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city: city });
       // Show email verification alert after successful signup
       setShowEmailAlert(true);
     }
     setLoading(false);
   };
-
+    
   /**
    * Handles closing the email verification alert
    * Resets the form after user acknowledges the email notification
@@ -107,7 +108,7 @@ export default function SignupScreen() {
     setPassword('');
     setConfirmPassword('');
     setFullName('');
-    setCityOrUni('');
+    setCity('');
     setError('');
     navigation.navigate('Welcome');
   };
@@ -130,10 +131,15 @@ export default function SignupScreen() {
         <View style={{ height: 8 }} />
         <Label>Full name</Label>
         <Input value={fullName} onChangeText={setFullName} />
+        <View style={{ height: 8 }} />        
+        <Label>City</Label>
+        <Dropdown 
+          value={city} 
+          onValueChange={setCity}
+          style={styles.cityDropdown}
+        />
         <View style={{ height: 8 }} />
-        <Label>City or University</Label>
-        <Input value={cityOrUni} onChangeText={setCityOrUni} />
-        <View style={{ height: 8 }} />
+
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <UIButton variant="solid" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
       </View>
@@ -156,5 +162,3 @@ const styles = StyleSheet.create({
   input: { backgroundColor: colors.white, padding: 12, borderRadius: 8, marginBottom: 12 },
   error: { color: colors.yellow, marginBottom: 12 },
 });
-
-
