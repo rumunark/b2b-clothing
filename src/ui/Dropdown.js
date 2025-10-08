@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { colors } from '../theme/colors';
 import { View, Text, StyleSheet, Modal, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 /**
