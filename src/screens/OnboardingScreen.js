@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen() {
   const [fullName, setFullName] = useState('');
-  const [cityOrUni, setCityOrUni] = useState('');
+  const [city, setCity] = useState('');
   const [dob, setDob] = useState('');
   const [avatarUri, setAvatarUri] = useState('');
   const [error, setError] = useState('');
@@ -24,7 +24,7 @@ export default function OnboardingScreen() {
 
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select(`full_name, city_or_uni, birthday, avatar_url`)
+        .select(`full_name, city, birthday, avatar_url`)
         .eq('id', user.id)
         .single();
 
@@ -35,7 +35,7 @@ export default function OnboardingScreen() {
 
       if (profile) {
         setFullName(profile.full_name || '');
-        setCityOrUni(profile.city_or_uni || '');
+        setCity(profile.city || '');
         if (profile.birthday) {
           // Convert YYYY-MM-DD to DD/MM/YYYY for display
           const [yyyy, mm, dd] = profile.birthday.split('-');
@@ -65,7 +65,7 @@ export default function OnboardingScreen() {
     const { error: upsertError } = await supabase.from('profiles').upsert({
       id: user.id,
       full_name: fullName,
-      city_or_uni: cityOrUni,
+      city: city,
       birthday: birthdayISO,
       avatar_url: avatarUri || null,
     });
@@ -114,7 +114,7 @@ export default function OnboardingScreen() {
         {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
         <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
-        <TextInput style={styles.input} placeholder="City or University" value={cityOrUni} onChangeText={setCityOrUni} />
+        <TextInput style={styles.input} placeholder="City" value={city} onChangeText={setCity} />
         <TextInput style={styles.input} placeholder="DOB (DD/MM/YYYY)" value={dob} onChangeText={setDob} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button title={saving ? 'Saving...' : 'Save'} onPress={onSave} disabled={saving} />

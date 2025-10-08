@@ -35,20 +35,11 @@ export default function RentListScreen() {
     let list = [];
     let { data, error } = await supabase
       .from('items')
-      .select('id, title, description, image_url, images, price_per_day, tags, tags_text, category, size')
+      .select('id, title, description, image_url, images, price_per_day, tags, category, size')
       .order('created_at', { ascending: false })
       .range(0, 49);
-    if (error) {
-      const fb = await supabase
-        .from('items')
-        .select('id, title, description, image_url, images, price_per_day, category, size')
-        .order('created_at', { ascending: false })
-        .range(0, 49);
-      list = fb.data ?? [];
-    } else {
-      list = data ?? [];
-    }
-
+    list = data ?? [];
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: wishlistData, error: wishlistError } = await supabase

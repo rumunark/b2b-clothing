@@ -112,12 +112,12 @@ export default function App() {
         // User is authenticated - check if profile is complete
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name, city_or_uni')
+          .select('full_name, city')
           .eq('id', user.id)
           .maybeSingle();
 
         // Check if user needs to complete onboarding
-        const needsOnboarding = !profile || !profile.full_name || !profile.city_or_uni;
+        const needsOnboarding = !profile || !profile.full_name || !profile.city;
         setRouteKey(needsOnboarding ? 'Onboarding' : 'App');
       } catch (e) {
         // Error occurred - default to auth stack
