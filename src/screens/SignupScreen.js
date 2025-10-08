@@ -134,9 +134,11 @@ export default function SignupScreen() {
         <View style={{ height: 8 }} />        
         <Label>City</Label>
         <Dropdown 
+          title="Select a City"
+          enumType='location'
           value={city} 
           onValueChange={setCity}
-          style={styles.cityDropdown}
+          placeholder="Select a City"
         />
         <View style={{ height: 8 }} />
 

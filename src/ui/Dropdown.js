@@ -1,46 +1,52 @@
-
 import { useState, useEffect } from 'react';
 import { colors } from '../theme/colors';
 import { View, Text, StyleSheet, Modal, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
+
 /**
-   * Enum Dropdown Component
-   * 
-   * A dropdown component that displays a list of values for a given enum.
-   * 
-   * @param {string} location - The name of the enum to display
-   * @param {string} chooseLocation - The current value of the dropdown
-   */
-export default function Dropdown({ value, onValueChange, style }) {
+ * Enum Dropdown Component
+ * 
+ * A reusable dropdown component that displays a list of values for a given enum type from Supabase.
+ * 
+ * @param {string} title - The title to be displayed at the top of the modal.
+ * @param {string} enumType - The name of the enum type to fetch from the database.
+ * @param {string} value - The currently selected value for the dropdown.
+ * @param {function} onValueChange - The callback function to be executed when a new value is selected.
+ * @param {object} style - Optional custom styles for the dropdown container.
+ * @param {string} placeholder - Optional placeholder text.
+ */
+export default function Dropdown({ title, enumType, value, onValueChange, style, placeholder = 'Select an option' }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [cities, setCities] = useState([]);
+    const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-      fetchCities();
-    }, []);
+      if (enumType) {
+        fetchEnumValues();
+      } else {
+        setError("Enum type is not provided.");
+        setLoading(false);
+      }
+    }, [enumType]);
 
-    const fetchCities = async () => {
+    const fetchEnumValues = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase.rpc('get_types', { enum_type: 'location' });
-        console.log(data);
+        setError(null);
+        const { data, error } = await supabase.rpc('get_types', { enum_type: enumType });
         if (error) throw error;
-        
-        // Data comes back as array of objects: [{ city_value: 'London' }, ...]
-        const cityValues = data;
-        setCities(cityValues);
+        setValues(data);
       } catch (err) {
-        console.error('Error fetching cities:', err);
+        console.error('Error fetching enum data:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    const handleSelect = (selectedCity) => {
-      onValueChange(selectedCity);
+    const handleSelect = (selectedValue) => {
+      onValueChange(selectedValue);
       setIsOpen(false);
     };
   
@@ -48,7 +54,7 @@ export default function Dropdown({ value, onValueChange, style }) {
       return (
         <View style={[styles.dropdown, style]}>
           <ActivityIndicator size="small" color={colors.white} />
-          <Text style={styles.dropdownText}>Loading cities...</Text>
+          <Text style={styles.dropdownText}>Loading options...</Text>
         </View>
       );
     }
@@ -56,7 +62,7 @@ export default function Dropdown({ value, onValueChange, style }) {
     if (error) {
       return (
         <View style={[styles.dropdown, style]}>
-          <Text style={styles.errorText}>Unable to load cities</Text>
+          <Text style={styles.errorText}>Unable to load options</Text>
         </View>
       );
     }
@@ -68,7 +74,7 @@ export default function Dropdown({ value, onValueChange, style }) {
           onPress={() => setIsOpen(true)}
         >
           <Text style={[styles.dropdownText, !value && styles.placeholderText]}>
-            {value || 'Select a city'}
+            {value || placeholder}
           </Text>
           <Text style={styles.dropdownArrow}>▼</Text>
         </TouchableOpacity>
@@ -82,7 +88,7 @@ export default function Dropdown({ value, onValueChange, style }) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Select City</Text>
+                <Text style={styles.modalTitle}>{title}</Text>
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setIsOpen(false)}
@@ -91,21 +97,21 @@ export default function Dropdown({ value, onValueChange, style }) {
                 </TouchableOpacity>
               </View>
               
-              <ScrollView style={styles.cityList}>
-                {cities.map((city, index) => (
+              <ScrollView style={styles.itemList}>
+                {values.map((item, index) => (
                   <TouchableOpacity
                     key={index}
                     style={[
-                      styles.cityItem,
-                      value === city && styles.selectedCityItem
+                      styles.item,
+                      value === item && styles.selectedItem
                     ]}
-                    onPress={() => handleSelect(city)}
+                    onPress={() => handleSelect(item)}
                   >
                     <Text style={[
-                      styles.cityText,
-                      value === city && styles.selectedCityText
+                      styles.itemText,
+                      value === item && styles.selectedItemText
                     ]}>
-                      {city}
+                      {item}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -182,25 +188,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.gray500,
   },
-  cityList: {
+  itemList: {
     maxHeight: 300,
   },
-  cityItem: {
+  item: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray100,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray100,
   },
-  selectedCityItem: {
+  selectedItem: {
     backgroundColor: colors.yellow + '20',
   },
-  cityText: {
+  itemText: {
     fontSize: 16,
     color: colors.navy,
   },
-  selectedCityText: {
+  selectedItemText: {
     fontWeight: '600',
     color: colors.navy,
   },
 });
-
-
