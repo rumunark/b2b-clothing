@@ -15,7 +15,7 @@ import Input from '../ui/Input';
 import Label from '../ui/Label';
 import UIButton from '../ui/Button';
 import UIAlert from '../ui/Alert';
-import Dropdown from '../ui/Dropdown'
+import Dropdown from '../ui/Dropdown';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 

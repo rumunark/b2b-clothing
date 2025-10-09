@@ -60,7 +60,7 @@ function AuthStackNavigator() {
 function OnboardingStackNavigator() {
   return (
     <OnboardingStack.Navigator>
-      <OnboardingStack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
+      <OnboardingStack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Complete Onboarding" showBack={true} showIcons={false} /> }} />
     </OnboardingStack.Navigator>
   );
 }
@@ -75,8 +75,8 @@ function AppStackNavigator() {
     <AppStack.Navigator initialRouteName="Tabs">
       <AppStack.Screen name="Tabs" component={AppTabs} options={{headerShown: false,}}/>
       <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title={route.params?.itemTitle || 'Item'} showBack={true} showIcons={false} /> })}/>
-      <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ title: 'Edit profile' }} />
-      <AppStack.Screen name="RentSelect" component={RentSelectScreen} options={{ title: 'Rent' }} />
+      <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="RentSelect" component={RentSelectScreen} options={{ headerShown: true, header: () => <HeaderBar title="Rent" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Basket" component={BasketScreen} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
     </AppStack.Navigator>

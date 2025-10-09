@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
+import Dropdown from '../ui/Dropdown';
 import * as ImagePicker from 'expo-image-picker';
 import Background from '../components/Background';
 import { supabase } from '../lib/supabaseClient';
@@ -114,7 +115,7 @@ export default function OnboardingScreen() {
         {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
         <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
-        <TextInput style={styles.input} placeholder="City" value={city} onChangeText={setCity} />
+        <Dropdown title="Select a City" enumType='location' value={city} onValueChange={setCity} placeholder="Select a City"/>
         <TextInput style={styles.input} placeholder="DOB (DD/MM/YYYY)" value={dob} onChangeText={setDob} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button title={saving ? 'Saving...' : 'Save'} onPress={onSave} disabled={saving} />
