@@ -46,8 +46,8 @@ function AuthStackNavigator() {
   return (
     <AuthStack.Navigator initialRouteName="Welcome">
       <AuthStack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
-      <AuthStack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-      <AuthStack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
+      <AuthStack.Screen name="Login" component={LoginScreen} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
+      <AuthStack.Screen name="Signup" component={SignupScreen} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
     </AuthStack.Navigator>
   );
 }
@@ -60,7 +60,7 @@ function AuthStackNavigator() {
 function OnboardingStackNavigator() {
   return (
     <OnboardingStack.Navigator>
-      <OnboardingStack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Complete Onboarding" showBack={true} showIcons={false} /> }} />
+      <OnboardingStack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Complete Onboarding" showBack={false} showIcons={false} /> }} />
     </OnboardingStack.Navigator>
   );
 }
