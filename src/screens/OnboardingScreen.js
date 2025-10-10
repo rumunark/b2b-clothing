@@ -111,7 +111,6 @@ export default function OnboardingScreen() {
   return (
     <Background>
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>Onboarding</Text>
         {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
         <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />

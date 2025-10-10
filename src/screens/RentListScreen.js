@@ -197,7 +197,7 @@ export default function RentListScreen() {
               style={[styles.actionBtn, styles.actionBtnSolid]}
               onPress={() => toggleWishlist(item)}
             >
-              <Ionicons name="heart" size={20} color={wishlistItems.has(item.id) ? colors.pink : "#0B1F3A"} />
+              <Ionicons name={wishlistItems.has(item.id) ? "heart" : "heart-outline"} size={20} color={wishlistItems.has(item.id) ? colors.pink : "#0B1F3A"} />
             </TouchableOpacity>
           </View>
          </View>
