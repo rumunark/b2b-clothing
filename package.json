@@ -18,7 +18,7 @@
     "deno": "^2.5.3",
     "expo": "^54.0.10",
     "expo-constants": "~18.0.9",
-    "expo-dev-client": "~6.0.13",
+    "expo-dev-client": "~6.0.15",
     "expo-device": "~8.0.9",
     "expo-image-manipulator": "~14.0.7",
     "expo-image-picker": "~17.0.8",
