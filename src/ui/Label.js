@@ -7,6 +7,7 @@
 
 import { Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
+import { styles } from '../theme/styles';
 
 /**
  * Label Component
@@ -19,13 +20,13 @@ export default function Label({ children, style }) {
   return <Text style={[styles.label, style]}>{children}</Text>;
 }
 
-// Label component styles
-const styles = StyleSheet.create({
-  label: { 
-    color: colors.white, // White text for visibility on dark backgrounds
-    fontWeight: '700', // Bold font weight for emphasis
-    marginBottom: 6 // Small margin for spacing from associated inputs
-  },
-});
+// // Label component styles
+// const styles = StyleSheet.create({
+//   label: { 
+//     color: colors.white, // White text for visibility on dark backgrounds
+//     fontWeight: '700', // Bold font weight for emphasis
+//     marginBottom: 6 // Small margin for spacing from associated inputs
+//   },
+// });
 
 

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Image, Alert, TouchableOpacity } from 'react-native';
 import Background from '../components/Background';
+import UIButton from '../ui/Button';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles } from '../theme/styles';
 
 export default function BasketScreen() {
   const [rows, setRows] = useState([]);
@@ -96,52 +98,46 @@ export default function BasketScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      <View style={[styles.container, { paddingBottom: insets.bottom * 2, flex: 1 }]}>
         <FlatList
           data={rows}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingTop: 12 }}
           keyExtractor={(r) => String(r.id)}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <TouchableOpacity
+              style={styles.listItemContainer}
+              onPress={() => handleEdit(item)}
+            >
               {item.items?.image_url ? (
-                <Image source={{ uri: item.items.image_url }} style={styles.thumb} />
-              ) : null}
-              <View style={{ flex: 1 }}>
-                <Text style={styles.itemTitle}>{item.items?.title || 'Item'}</Text>
-                <Text style={styles.meta}>Start {item.start_date} • {item.nights} night(s)</Text>
+                <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
+              ) : (
+                  <View style={styles.listItemImage} />
+              )}
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>{item.items?.title || 'Item'}</Text>
+                <Text style={styles.body}>
+                  Start {item.start_date} • {item.nights} {item.nights === 1 ? 'night' : 'nights'}
+                </Text>
                 <Text style={styles.price}>£{Number(item.total || 0).toFixed(2)}</Text>
               </View>
-              <View style={styles.actions}>
-                <TouchableOpacity onPress={() => handleEdit(item)} style={styles.iconBtn}>
-                  <Ionicons name="pencil" size={18} color={colors.white} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.iconBtn}>
+              <View style={styles.listItemActions}>
+                <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.iconButtonTransparent}>
                   <Ionicons name="trash" size={18} color={colors.white} />
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
-          ListEmptyComponent={<Text style={styles.empty}>{loading ? 'Loading…' : 'Basket is empty.'}</Text>}
+          ListEmptyComponent={
+            <Text style={styles.body}>
+              {loading ? 'Loading…' : 'Basket is empty.'}
+            </Text>
+          }
         />
-        <TouchableOpacity style={styles.sendBtn} onPress={handleSendRequest}>
-          <Text style={styles.sendText}>Send request</Text>
-        </TouchableOpacity>
+        {rows.length > 0 && (
+          <UIButton onPress={handleSendRequest} variant="gold">Send request for all</UIButton>
+        )}
       </View>
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  row: { flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'center' },
-  thumb: { width: 72, height: 72, borderRadius: 8 },
-  itemTitle: { color: colors.white, fontWeight: '700' },
-  meta: { color: colors.white },
-  price: { color: colors.yellow, fontWeight: '900' },
-  actions: { flexDirection: 'row', gap: 8 },
-  iconBtn: { padding: 6, borderWidth: 1, borderColor: '#334', borderRadius: 8 },
-  empty: { color: colors.white, textAlign: 'center', marginTop: 40 },
-  sendBtn: { marginTop: 8, paddingVertical: 14, borderRadius: 10, backgroundColor: colors.yellow, alignItems: 'center' },
-  sendText: { color: '#000', fontWeight: '900' },
-});
-
-

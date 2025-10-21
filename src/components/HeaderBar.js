@@ -1,8 +1,9 @@
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
+import { styles } from '../theme/styles';
 
 export default function HeaderBar({ title, showBack, showIcons }) {
   const navigation = useNavigation();
@@ -10,54 +11,34 @@ export default function HeaderBar({ title, showBack, showIcons }) {
 
   return (
     <View style={[styles.header, { paddingTop: insets.top }]}>
-      <View style={styles.leftContainer}>
+      {/* Left Container */}
+      <View style={styles.headerLeftContainer}>
         {showBack && (
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 12}}>
             <Ionicons name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
         )}
         {title && <Text style={styles.headerTitle}>{title}</Text>}
       </View>
-      {showIcons && (
-        <View style={styles.rightContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('Basket')} style={styles.iconButton}>
-            <Ionicons name="cart-outline" size={24} color={colors.white} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconButton}>
-            <Ionicons name="settings-outline" size={24} color={colors.white} />
-          </TouchableOpacity>
-        </View>
-      )}
+
+      {/* EXPERIMENTAL: Do we want the logo always shown in header?? */}
+      {/* <View style={styles.headerCenter}>
+        <Text style={[styles.brandTitle, { fontSize: 24, color: colors.yellow }]}> b2b </Text>
+      </View> */}
+      
+      {/* Right Container */}
+      <View style={styles.headerRightContainer}>
+        {showIcons && (
+          <>
+            <TouchableOpacity onPress={() => navigation.navigate('Basket')} style={{ marginRight: 16}}>
+              <Ionicons name="cart-outline" size={24} color={colors.white} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 4}}>
+              <Ionicons name="settings-outline" size={24} color={colors.white} />
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.navy,
-    paddingHorizontal: 16,
-    height: 100,
-  },
-  leftContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    marginLeft: 16,
-  },
-  backButton: {
-    marginRight: 10,
-  },
-  headerTitle: {
-    color: colors.white,
-    fontSize: 20,
-    fontWeight: '800',
-  },
-});

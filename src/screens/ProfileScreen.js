@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
 import { supabase } from '../lib/supabaseClient';
+import UIButton from '../ui/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles } from '../theme/styles';
 
 export default function ProfileScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ export default function ProfileScreen({ navigation }) {
   const [fullName, setFullName] = useState('');
   const [dob, setDob] = useState('');
   const [age, setAge] = useState(null);
+  const [verified, setVerified] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [numListed, setNumListed] = useState(0);
   const [numRented, setNumRented] = useState(0);
@@ -22,7 +25,7 @@ export default function ProfileScreen({ navigation }) {
       setEmail(user?.email ?? '');
       setUserId(user?.id ?? '');
       if (!user) return;
-      const { data: profile } = await supabase.from('profiles').select('full_name, city_or_uni, birthday, avatar_url').eq('id', user.id).maybeSingle();
+      const { data: profile } = await supabase.from('profiles').select('full_name, city, birthday, avatar_url, is_verified').eq('id', user.id).maybeSingle();
       setFullName(profile?.full_name ?? '');
       const rawDob = profile?.birthday ?? '';
       if (rawDob) {
@@ -53,36 +56,19 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={[styles.container, {}]}>
-        {/* <Text style={styles.title}>Profile</Text> */}
+      <View style={[styles.containerBackground, styles.centered]}>
+        {/* <Text style={profileScreenStyles.title}>Profile</Text> */}
         {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : null}
-        <Text style={styles.value}>{fullName}</Text>
-        <Text style={styles.value}>{email}</Text>
-        {dob ? <Text style={styles.value}>DOB: {dob}</Text> : null}
-        {age != null ? <Text style={styles.value}>Age: {age}</Text> : null}
-        {userId ? <Text style={styles.value}>User ID: {userId}</Text> : null}
-        <View style={{ height: 12 }} />
-        <Text style={styles.value}>Items listed: {numListed}</Text>
-        <Text style={styles.value}>Items rented: {numRented}</Text>
-        <View style={{ height: 16 }} />
-        <TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={styles.editBtn}>
-          <Text style={styles.editText}>Edit profile</Text>
-        </TouchableOpacity>
-        <View style={{ height: 12 }} />
-        <Button title="Sign out" onPress={() => supabase.auth.signOut()} />
+        <Text style={styles.body}>Full name: {fullName}</Text>
+        <Text style={styles.body}>Email: {email}</Text>
+        {dob ? <Text style={styles.body}>DOB: {dob}</Text> : null}
+        {age != null ? <Text style={styles.body}>Age: {age}</Text> : null}
+        {verified ? <Text style={styles.body}>Verified: Yes</Text> : <Text style={styles.body}>Verified: No</Text>}
+        <Text style={styles.body}>Items listed: {numListed}</Text>
+        <Text style={styles.body}>Items rented: {numRented}</Text>
+        <UIButton onPress={() => navigation.navigate('EditProfile')}>Edit profile</UIButton>
+        <UIButton onPress={() => supabase.auth.signOut()}>Sign Out</UIButton>
       </View>
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: colors.navy },
-  title: { fontSize: 20, fontWeight: '800', marginBottom: 8, color: colors.white },
-  email: { marginBottom: 16, color: colors.gray100 },
-  value: { color: colors.white, marginBottom: 6 },
-  avatar: { width: 96, height: 96, borderRadius: 48, marginBottom: 12, borderWidth: 2, borderColor: colors.white },
-  editBtn: { alignSelf: 'flex-start', borderWidth: 2, borderColor: colors.white, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 10 },
-  editText: { color: colors.white, fontWeight: '700' },
-});
-
-

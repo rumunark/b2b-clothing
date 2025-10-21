@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Background from '../components/Background';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles } from '../theme/styles';
 
 export default function WishlistScreen() {
   const [items, setItems] = useState([]);
@@ -99,36 +101,40 @@ export default function WishlistScreen() {
 
   return (
     <Background>
-      <View style={[styles.container]}>
-        {/* <Text style={styles.title}>Wishlist</Text> */}
+      <View style={styles.container}>
         <FlatList
           data={items}
           keyExtractor={(it) => String(it.id)}
+          contentContainerStyle={{ paddingTop: 12 }}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => navigation.navigate('ItemDetail', { id: item.id })} style={styles.row}>
-              {item.image_url ? <Image source={{ uri: item.image_url }} style={styles.thumb} /> : null}
-              <View style={{ flex: 1 }}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                {item.price_per_day != null ? <Text style={styles.price}>£{Number(item.price_per_day).toFixed(2)} / day</Text> : null}
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ItemDetail', { id: item.id })}
+              style={styles.listItemContainer}
+            >
+              {item.image_url ? (
+                <Image source={{ uri: item.image_url }} style={styles.listItemImage} />
+              ) : (
+                <View style={styles.listItemImage} /> // Placeholder
+              )}
+              <View style={styles.listItemContent}>
+                <Text style={styles.listItemTitle}>{item.title}</Text>
+                {item.price_per_day != null && (
+                  <Text style={styles.body}>
+                    £{Number(item.price_per_day).toFixed(2)} / day
+                  </Text>
+                )}
+              </View>
+              <View style={styles.listItemActions}>
+                {/* TODO: Create an app provider as a wrapper to allow a wishlist context which manages global add/delete to wishlist */}
+                <TouchableOpacity onPress={() => toggleWishlist(item.id)} style={styles.iconButtonTransparent}>
+                  <Ionicons name="trash" size={18} color={colors.white} />
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           )}
-          ListEmptyComponent={<Text style={styles.empty}>No items yet.</Text>}
+          ListEmptyComponent={<Text style={styles.body}>No items yet.</Text>}
         />
       </View>
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  container: { flex: 1, padding: 16 },
-  title: { color: colors.white, fontSize: 20, fontWeight: '800', marginBottom: 12 },
-  row: { flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'center' },
-  thumb: { width: 72, height: 72, borderRadius: 8 },
-  itemTitle: { color: colors.white, fontWeight: '700' },
-  price: { color: colors.white },
-  empty: { color: colors.white, textAlign: 'center', marginTop: 40 },
-});
-
-

@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
+import { styles } from '../theme/styles';
 import Background from '../components/Background';
 import Input from '../ui/Input';
 import Label from '../ui/Label';
@@ -115,8 +116,8 @@ export default function SignupScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>Create your account</Text>
+      <View style={[styles.containerBackground, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <Text style={styles.screenTitle}>Create your account</Text>
         <Label>Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />
         <View style={{ height: 8 }} />
@@ -143,7 +144,7 @@ export default function SignupScreen() {
         <View style={{ height: 8 }} />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <UIButton variant="solid" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
+        <UIButton variant="gold" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
       </View>
       
       {/* Email verification alert */}
@@ -157,10 +158,3 @@ export default function SignupScreen() {
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: colors.navy },
-  title: { fontSize: 24, marginBottom: 16, fontWeight: '800', color: colors.white },
-  input: { backgroundColor: colors.white, padding: 12, borderRadius: 8, marginBottom: 12 },
-  error: { color: colors.yellow, marginBottom: 12 },
-});
