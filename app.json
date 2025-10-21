@@ -20,19 +20,22 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.b2bclothing",
+      "googleServicesFile": "b2b-clothing-1-firebase-adminsdk-fbsvc-b38d9824d7.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {
         "projectId": "3fe20117-6672-44d9-aa7c-128c97f5e78e"
       }
     },
-    "owner": "widdows"
+    "owner": "b2b-collective"
   }
 }
