@@ -120,19 +120,14 @@ export default function SignupScreen() {
         <Text style={styles.screenTitle}>Create your account</Text>
         <Label>Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />
-        <View style={{ height: 8 }} />
         <Label>Confirm Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={confirmEmail} onChangeText={setConfirmEmail} />
-        <View style={{ height: 8 }} />
         <Label>Password - </Label>
         <Input placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
-        <View style={{ height: 8 }} />
         <Label>Confirm Password</Label>
         <Input placeholder="••••••••" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
-        <View style={{ height: 8 }} />
         <Label>Full name</Label>
         <Input value={fullName} onChangeText={setFullName} />
-        <View style={{ height: 8 }} />        
         <Label>City</Label>
         <Dropdown 
           title="Select a City"
@@ -141,8 +136,6 @@ export default function SignupScreen() {
           onValueChange={setCity}
           placeholder="Select a City"
         />
-        <View style={{ height: 8 }} />
-
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <UIButton variant="gold" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
       </View>

@@ -48,7 +48,6 @@ export default function LoginScreen() {
         <Text style={styles.screenTitle}>Login</Text>
         <Label>Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />
-        <View style={{ height: 8 }} />
         <Label>Password</Label>
         <Input placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
