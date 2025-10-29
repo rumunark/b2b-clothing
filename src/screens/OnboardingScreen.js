@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import Dropdown from '../ui/Dropdown';
 import * as ImagePicker from 'expo-image-picker';
 import Background from '../components/Background';
+import UIButton from '../ui/Button';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles } from '../theme/styles';
 
 export default function OnboardingScreen() {
   const [fullName, setFullName] = useState('');
@@ -110,27 +112,15 @@ export default function OnboardingScreen() {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={[styles.containerBackground, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
-        <TouchableOpacity onPress={pickAvatar} style={styles.pickBtn}><Text style={styles.pickText}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Text></TouchableOpacity>
+        <UIButton onPress={pickAvatar} variant="outline" size="md">{avatarUri ? 'Change avatar' : 'Pick avatar'}</UIButton>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
         <Dropdown title="Select a City" enumType='location' value={city} onValueChange={setCity} placeholder="Select a City"/>
         <TextInput style={styles.input} placeholder="DOB (DD/MM/YYYY)" value={dob} onChangeText={setDob} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button title={saving ? 'Saving...' : 'Save'} onPress={onSave} disabled={saving} />
+        <UIButton onPress={onSave} variant="gold">Save</UIButton>
       </View>
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: colors.navy },
-  title: { fontSize: 24, marginBottom: 16, fontWeight: '800', color: colors.white },
-  input: { backgroundColor: colors.white, padding: 12, borderRadius: 8, marginBottom: 12 },
-  error: { color: colors.yellow, marginBottom: 12 },
-  avatar: { width: 96, height: 96, borderRadius: 48, alignSelf: 'center', marginBottom: 12, borderWidth: 2, borderColor: colors.white },
-  pickBtn: { alignSelf: 'center', borderWidth: 2, borderColor: colors.white, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, marginBottom: 12 },
-  pickText: { color: colors.white, fontWeight: '700' },
-});
-
-

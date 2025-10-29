@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import dayjs from 'dayjs';
 import { supabase } from '../lib/supabaseClient';
 import Background from '../components/Background';
+import UIButton from '../ui/Button';
+import Label from '../ui/Label';
 import { colors } from '../theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { styles } from '../theme/styles';
 
 export default function RentSelectScreen() {
   const route = useRoute();
@@ -22,7 +25,7 @@ export default function RentSelectScreen() {
     const load = async () => {
       const { data, error } = await supabase
         .from('items')
-        .select('id, title, price_per_day, cleaning_price, category')
+        .select('id, title, price_per_day, cleaning_price, category, owner_id')
         .eq('id', id)
         .maybeSingle();
       if (error) Alert.alert('Error', error.message);
@@ -30,6 +33,44 @@ export default function RentSelectScreen() {
     };
     if (id) load();
   }, [id]);
+
+  const handleSendRequest = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      Alert.alert('Not signed in', 'Please sign in first.');
+      return;
+    }
+    // Check for the 'item' state, not 'rows'
+    if (!item) {
+      Alert.alert('Item not loaded', 'The item details have not been loaded yet.');
+      return;
+    }
+
+    const ownerId = item.owner_id; // Get owner_id from the item object
+    if (!ownerId) {
+      Alert.alert('Nothing sent', 'Could not find a lender to message for this item.');
+      return;
+    }
+
+    // Construct the message using the component's state
+    const content = `Rental request for ${item.title || 'item'}\nStart: ${startDate}\nNights: ${effectiveNights}\nTotal: £${estimatedTotal}\n\nAccept?`;
+
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ sender_id: user.id, receiver_id: ownerId, content }]);
+
+    if (!error) {
+      Alert.alert('Request sent', 'Your request has been sent to the lender.');
+      // Optionally, navigate the user away after success
+      // navigation.goBack();
+    } else {
+      Alert.alert('Send error', error.message);
+    }
+  } catch (e) {
+    Alert.alert('Send error', e.message || String(e));
+  }
+};
 
   const pricePerDay = Number(item?.price_per_day || 0);
   const cleaningFee = Number(item?.cleaning_price || 0);
@@ -42,7 +83,7 @@ export default function RentSelectScreen() {
   if (!item) {
     return (
       <Background>
-        <View style={[styles.center, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <View style={[styles.centered, { paddingBottom: insets.bottom }]}>
           <Text style={{ color: colors.white }}>Loading…</Text>
         </View>
       </Background>
@@ -51,18 +92,19 @@ export default function RentSelectScreen() {
 
   return (
     <Background>
-      <ScrollView contentContainerStyle={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <Text style={styles.title}>{item.title}</Text>
+      <ScrollView contentContainerStyle={[styles.containerBackground, { paddingBottom: insets.bottom }]}>
+        <Text style={styles.screenTitle}>{item.title}</Text>
 
-        <Text style={styles.label}>Start date</Text>
+        {/* <Text style={styles.label}>Start date</Text> */}
+        <Label>Start date</Label>
         <Calendar
           onDayPress={(d) => setStartDate(d.dateString)}
-          markedDates={{ [startDate]: { selected: true, selectedColor: '#0a2a66' } }}
-          theme={{ selectedDayTextColor: '#fff', todayTextColor: '#0a2a66', arrowColor: '#0a2a66' }}
+          markedDates={{ [startDate]: { selected: true, selectedColor: colors.lightNavy } }}
+          theme={{ selectedDayTextColor: colors.white, todayTextColor: colors.lightNavy, arrowColor: colors.lightNavy }}
         />
 
         <View style={{ height: 12 }} />
-        <Text style={styles.label}>Duration</Text>
+        <Label>Number of nights</Label>
         <View style={styles.row}>
           {[{k:1,t:'1 night'},{k:3,t:'3 nights'},{k:7,t:'1 week'}].map(opt => (
             <TouchableOpacity
@@ -82,7 +124,7 @@ export default function RentSelectScreen() {
         </View>
         {!nights ? (
           <View style={{ marginTop: 8 }}>
-            <Text style={styles.sublabel}>Custom nights</Text>
+            <Label>Custom nights</Label>
             <TextInput
               value={customNights}
               onChangeText={setCustomNights}
@@ -93,54 +135,26 @@ export default function RentSelectScreen() {
           </View>
         ) : null}
 
-        <View style={{ height: 16 }} />
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>Price per night</Text>
-          <Text style={styles.summaryVal}>£{pricePerDay.toFixed(2)}</Text>
+        <View style={{ height: 12 }} />
+
+        <View style={styles.row}>
+          <Text style={styles.body}>Price per day:</Text>
+          <Text style={styles.value}>£{pricePerDay.toFixed(2)}</Text>
         </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>Cleaning fee</Text>
-          <Text style={styles.summaryVal}>£{cleaningFee.toFixed(2)}</Text>
+        <View style={styles.row}>
+          <Text style={styles.body}>Cleaning fee:</Text>
+          <Text style={styles.value}>£{cleaningFee.toFixed(2)}</Text>
         </View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.totalText}>Estimated total</Text>
-          <Text style={styles.totalVal}>£{estimatedTotal}</Text>
+        <View style={styles.row}>
+          <Text style={styles.body}>Estimated total:</Text>
+          <Text style={styles.price}>£{estimatedTotal}</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.cta}
-          onPress={() => {
-            Alert.alert(
-              'Request summary',
-              `Start: ${startDate}\nNights: ${effectiveNights}\nTotal: £${estimatedTotal}`,
-              [{ text: 'OK', onPress: () => navigation.goBack() }]
-            );
-          }}
-        >
-          <Text style={styles.ctaText}>Proceed</Text>
-        </TouchableOpacity>
+        <View style={{ height: 16 }} />
+
+        <UIButton onPress={handleSendRequest} variant="gold" size="lg">Send request</UIButton>
+
       </ScrollView>
     </Background>
   );
 }
-
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.navy },
-  container: { padding: 16, backgroundColor: colors.navy, minHeight: '100%' },
-  title: { color: colors.white, fontSize: 18, fontWeight: '800', marginBottom: 12 },
-  label: { color: colors.white, marginTop: 8, marginBottom: 6, fontWeight: '700' },
-  sublabel: { color: colors.white },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: '#0a2a66' },
-  chipActive: { backgroundColor: '#0a2a66' },
-  chipText: { color: '#0a2a66' },
-  chipTextActive: { color: '#fff' },
-  input: { marginTop: 6, backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 12, height: 40 },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  summaryText: { color: colors.gray100 },
-  summaryVal: { color: colors.white, fontWeight: '700' },
-  totalText: { color: colors.white, fontWeight: '900', marginTop: 8 },
-  totalVal: { color: colors.yellow, fontWeight: '900', marginTop: 8 },
-  cta: { marginTop: 16, backgroundColor: colors.yellow, borderRadius: 8, paddingVertical: 12, alignItems: 'center' },
-  ctaText: { color: '#000', fontWeight: '800' },
-});
