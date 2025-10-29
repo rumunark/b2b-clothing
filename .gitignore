@@ -36,3 +36,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Googl services account key
+b2b-clothing-1-firebase-adminsdk-fbsvc-c189585de2.json
