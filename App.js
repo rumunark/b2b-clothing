@@ -9,7 +9,7 @@
  */
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Button, ActivityIndicator } from 'react-native';
 import { NavigationContainer, getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
@@ -29,6 +29,9 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import RentListScreen from './src/screens/RentListScreen';
 import RentSelectScreen from './src/screens/RentSelectScreen';
 import HeaderBar from './src/components/HeaderBar';
+
+// Notification function imports
+import { usePushNotifications, sendPushNotification } from './UsePushNotifications';
 
 // Create stack navigators for different app sections
 const AuthStack = createNativeStackNavigator();
@@ -92,6 +95,29 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   // State to determine which navigation stack to show: 'Auth' | 'Onboarding' | 'App'
   const [routeKey, setRouteKey] = useState('Auth');
+  // Push notification handler
+  const { expoPushToken, notification } = usePushNotifications();
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
+      <Text>Your Expo push token: {expoPushToken}</Text>
+      
+      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <Text>Title: {notification?.request.content.title || 'None'}</Text>
+        <Text>Body: {notification?.request.content.body || 'None'}</Text>
+        <Text>Data: {notification ? JSON.stringify(notification.request.content.data) : 'None'}</Text>
+      </View>
+      
+      <Button
+        title="Press to Send Notification"
+        onPress={async () => {
+          if (expoPushToken) {
+            await sendPushNotification(expoPushToken);
+          }
+        }}
+      />
+    </View>
+  );
 
   useEffect(() => {
     /**

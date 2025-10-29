@@ -36,6 +36,3 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
-
-# firebase admin sdk
-b2b-clothing-1-firebase-adminsdk-fbsvc-b38d9824d7.json
