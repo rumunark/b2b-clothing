@@ -76,59 +76,32 @@ export default function App() {
   // State from main app logic
   const [isLoading, setIsLoading] = useState(true);
   const [routeKey, setRouteKey] = useState('Auth');
-  // Push notification handler
-  const { expoPushToken, notification } = usePushNotifications();
-
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
-      <Text>Your Expo push token: {expoPushToken}</Text>
-      
-      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Title: {notification?.request.content.title || 'None'}</Text>
-        <Text>Body: {notification?.request.content.body || 'None'}</Text>
-        <Text>Data: {notification ? JSON.stringify(notification.request.content.data) : 'None'}</Text>
-      </View>
-      
-      <Button
-        title="Press to Send Notification"
-        onPress={async () => {
-          if (expoPushToken) {
-            await sendPushNotification(expoPushToken);
-          }
-        }}
-      />
-    </View>
-  );
-
-  // State from push notification logic
-  const [expoPushToken, setExpoPushToken] = useState('');
-  const [notification, setNotification] = useState(undefined);
   const notificationListener = useRef();
   const responseListener = useRef();
 
 
-  // useEffect for Push Notifications (from the first App function)
-  useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then(token => {
-        setExpoPushToken(token ?? '');
-        // **TODO**: Save this token to your backend (e.g., user's profile in Supabase)
-        // so you can send notifications to this user later.
-      })
-      .catch((error) => console.error(error));
+  // // useEffect for Push Notifications (from the first App function)
+  // useEffect(() => {
+  //   registerForPushNotificationsAsync()
+  //     .then(token => {
+  //       setExpoPushToken(token ?? '');
+  //       // **TODO**: Save this token to your backend (e.g., user's profile in Supabase)
+  //       // so you can send notifications to this user later.
+  //     })
+  //     .catch((error) => console.error(error));
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
+  //   notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+  //     setNotification(notification);
+  //   });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification Response:', response);
-      // You can add navigation logic here based on the notification response
-    });
+  //   responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+  //     console.log('Notification Response:', response);
+  //     // You can add navigation logic here based on the notification response
+  //   });
 
-    return () => {
-    };
-  }, []);
+  //   return () => {
+  //   };
+  // }, []);
 
   // useEffect for Authentication and Routing
   useEffect(() => {
