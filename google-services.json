@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "926313361795",
-    "project_id": "b2b-clothing-1",
-    "storage_bucket": "b2b-clothing-1.firebasestorage.app"
+    "project_number": "367001454487",
+    "project_id": "b2b-clothing-d5c89",
+    "storage_bucket": "b2b-clothing-d5c89.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:926313361795:android:b51da1c57d3b91ef2506b6",
+        "mobilesdk_app_id": "1:367001454487:android:1f2c934dedfe7c015ee6d2",
         "android_client_info": {
-          "package_name": "com.b2b_clothing"
+          "package_name": "com.b2bclothing"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCGiu7WKIQ1Kl-m8sYN3PjViAiPsd21IEk"
+          "current_key": "AIzaSyBNfvZZLiM4GXbWunaxa9EXHNhO9-p6O6s"
         }
       ],
       "services": {

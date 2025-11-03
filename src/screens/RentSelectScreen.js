@@ -58,7 +58,7 @@ export default function RentSelectScreen() {
 
     const { error } = await supabase
       .from('messages')
-      .insert([{ sender_id: user.id, receiver_id: ownerId, content }]);
+      .insert([{ sender_id: user.id, receiver_id: ownerId, content, item_id: item.id }]);
 
     if (!error) {
       Alert.alert('Request sent', 'Your request has been sent to the lender.');

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "b2bclothing-mobile",
+    "name": "b2b-clothing-mobile",
     "slug": "b2b-clothing",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,7 +21,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.b2b_clothing",
+      "package": "com.b2bclothing",
       "googleServicesFile": "./google-services.json"
     },
     "web": {

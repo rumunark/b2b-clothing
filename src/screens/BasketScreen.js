@@ -80,13 +80,14 @@ export default function BasketScreen() {
       if (!rows.length) { Alert.alert('Basket empty', 'Add an item to your basket first.'); return; }
 
       let sent = 0;
-      for (const r of rows) {
-        const ownerId = r.items?.owner_id;
+      for (const basketItem of rows) {
+        const ownerId = basketItem.items?.owner_id;
         if (!ownerId) continue;
-        const content = `Rental request for ${r.items?.title || 'item'}\nStart: ${r.start_date}\nNights: ${r.nights}\nTotal: £${Number(r.total || 0).toFixed(2)}\n\nAccept?`;
+        const content = `Rental request for ${basketItem.items?.title || 'item'}\nStart: ${basketItem.start_date}\nNights: ${basketItem.nights}\nTotal: £${Number(basketItem.total || 0).toFixed(2)}\n\nAccept?`;
+        Alert.alert('Debug Item ID', `Item ID: ${basketItem.item_id}`); // Debugging line
         const { error } = await supabase
           .from('messages')
-          .insert([{ sender_id: user.id, receiver_id: ownerId, content }]);
+          .insert([{ sender_id: user.id, receiver_id: ownerId, content, item_id: basketItem.item_id }]);
         if (!error) sent += 1;
       }
       if (sent > 0) Alert.alert('Request sent', `Sent ${sent} request(s) to lender(s).`);

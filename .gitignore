@@ -36,3 +36,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+credentials.json
+*.keystore
+
+b2b-clothing-d5c89-firebase-adminsdk-fbsvc-1d0f789e6a.json

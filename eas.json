@@ -1,19 +1,25 @@
 {
   "cli": {
-    "version": ">= 16.22.0",
-    "appVersionSource": "remote",
-    "requireCommit": true
+    "version": ">= 7.6.0"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "credentialsSource": "local"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "credentialsSource": "local"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "android": {
+        "credentialsSource": "local"
+      }
     }
   },
   "submit": {

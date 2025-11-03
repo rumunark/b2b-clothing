@@ -95,29 +95,29 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   // State to determine which navigation stack to show: 'Auth' | 'Onboarding' | 'App'
   const [routeKey, setRouteKey] = useState('Auth');
-  // Push notification handler
-  const { expoPushToken, notification } = usePushNotifications();
-
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
-      <Text>Your Expo push token: {expoPushToken}</Text>
+  // // Push notification handler
+  // const { expoPushToken, notification } = usePushNotifications();
+  // console.log(expoPushToken);
+  // return (
+  //   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
+  //     <Text>Your Expo push token: {expoPushToken}</Text>
       
-      <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Title: {notification?.request.content.title || 'None'}</Text>
-        <Text>Body: {notification?.request.content.body || 'None'}</Text>
-        <Text>Data: {notification ? JSON.stringify(notification.request.content.data) : 'None'}</Text>
-      </View>
+  //     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+  //       <Text>Title: {notification?.request.content.title || 'None'}</Text>
+  //       <Text>Body: {notification?.request.content.body || 'None'}</Text>
+  //       <Text>Data: {notification ? JSON.stringify(notification.request.content.data) : 'None'}</Text>
+  //     </View>
       
-      <Button
-        title="Press to Send Notification"
-        onPress={async () => {
-          if (expoPushToken) {
-            await sendPushNotification(expoPushToken);
-          }
-        }}
-      />
-    </View>
-  );
+  //     <Button
+  //       title="Press to Send Notification"
+  //       onPress={async () => {
+  //         if (expoPushToken) {
+  //           await sendPushNotification(expoPushToken);
+  //         }
+  //       }}
+  //     />
+  //   </View>
+  // );
 
   useEffect(() => {
     /**
