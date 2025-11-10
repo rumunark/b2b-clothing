@@ -11,21 +11,20 @@
 - [ ] Pre-populate a list of exchange spots for Manchester (e.g., UoM Student Union, Sainsbury's Fallowfield).
 
 **Core Commerce Features**
-- [ ] Create a functional shopping basket. 
-- [ ] Integrate Stripe for payment processing. 
-- [ ] Add a "quick add to basket" button on items.
+- [x] Create a functional shopping basket. (Sends rental request to the seller)
+- [ ] Integrate Stripe for payment processing after a request is accepted. 
+- [x] Add a "quick add to basket" button on items.
 - [x] Implement a "quick add to Wishlist" button on items.
 
 **Rental & Communication Flow**
-- [ ] Build a rental request system with notifications sent to the item owner. 
-- [ ] Create a screen for owners to view, accept, or decline rental requests (Repurpose home screen). 
-- [ ] See active rentals on home screen (details, due date) 
-- [ ] Add an "Enquire Now" button on item detail pages to launch an in-app chat.
-- [ ] Develop an in-app chat feature for users to coordinate exchanges after an order is confirmed. 
-- [ ] Requests to rent show up on home page where they await to be approved or denied
+- [ ] Notifications sent to the user upon receiving a message or rental request.
+- [ ] See active rentals on home screen (details, due return date).
+- [ ] Add an end-to-end encrypted chat page where users can converse.
+- [x] Requests to rent show up on home page where they await to be approved or denied.
 
 **Other Features**
-- [ ] Rate a seller/buyer after completing a rental 
+- [ ] Rate a seller/buyer after completing a rental.
+- [ ] Verify Cleaning with a receipt image upload (manual or automated verification?).
 
 ## Future Features
 
