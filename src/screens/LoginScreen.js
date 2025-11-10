@@ -15,6 +15,7 @@ import UIButton from '../ui/Button';
 import { supabase } from '../lib/supabaseClient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
+import { generateAndStoreKeys, getPublicKey } from '../lib/encryption';
 
 /**
  * LoginScreen Component
@@ -37,8 +38,21 @@ export default function LoginScreen() {
   const onLogin = async () => {
     setLoading(true);
     setError('');
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) setError(signInError.message);
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    const user = data.user;
+    if (user) {
+      const publicKey = await getPublicKey(user.id);
+      if (!publicKey) {
+        console.log(`User ${user.id} is missing public key. Generating...`);
+        await generateAndStoreKeys(user.id);
+      }
+    }
     setLoading(false);
   };
 
