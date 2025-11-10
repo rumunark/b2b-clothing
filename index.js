@@ -5,6 +5,8 @@
  * with Expo's runtime. It ensures the app works both in Expo Go and native builds.
  */
 
+import 'react-native-get-random-values';
+
 import { registerRootComponent } from 'expo';
 import App from './App';
 

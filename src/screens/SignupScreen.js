@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { generateAndStoreKeys, getPublicKey } from '../lib/encryption';
 import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import { styles } from '../theme/styles';
@@ -91,6 +92,10 @@ export default function SignupScreen() {
     const user = data.user;
     if (user) {
       await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city: city });
+
+      // Update user profile with public key
+      await generateAndStoreKeys(user.id);
+      
       // Show email verification alert after successful signup
       setShowEmailAlert(true);
     }
