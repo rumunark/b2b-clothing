@@ -80,11 +80,6 @@ export default function LandingScreen({ navigation }) {
                   </View>
                 </TouchableOpacity>
               )}
-              ListEmptyComponent={
-                <Text style={styles.body}>
-                  {loading ? 'Loading…' : 'No rental requests.'}
-                </Text>
-              }
             />
           </View>
         ) : (
