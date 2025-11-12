@@ -12,7 +12,7 @@ import { colors } from '../theme/colors';
 import HeaderBar from '../components/HeaderBar';
 
 // Screen imports for each tab
-import LandingScreen from '../screens/LandingScreen';
+import LandingScreen from '../screens/HomeScreen';
 import RentListScreen from '../screens/RentListScreen';
 import ListScreen from '../screens/ListScreen';
 import ProfileScreen from '../screens/ProfileScreen';

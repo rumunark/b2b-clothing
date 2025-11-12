@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import nacl from 'tweetnacl';
 import { supabase } from './supabaseClient';
 import { encode, decode } from 'js-base64'; 
-import { TextEncoder, TextDecoder } from 'text-encoding'; 
+// import { TextEncoder, TextDecoder } from 'text-encoding'; 
 
 const base64ToUint8Array = (base64String) => {
   return new Uint8Array(decode(base64String).split(',').map(Number));

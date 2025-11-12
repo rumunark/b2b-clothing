@@ -19,7 +19,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 // Screen imports for different app sections
 import LoginScreen from './src/screens/LoginScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
-import LandingScreen from './src/screens/LandingScreen';
+import HomeScreen from './src/screens/HomeScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import AppTabs from './src/navigation/AppTabs';
@@ -27,7 +27,7 @@ import ItemDetailScreen from './src/screens/ItemDetailScreen';
 import BasketScreen from './src/screens/BasketScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import RentListScreen from './src/screens/RentListScreen';
-import RentSelectScreen from './src/screens/RentSelectScreen';
+import RentConfirmationScreen from './src/screens/RentConfirmationScreen';
 import HeaderBar from './src/components/HeaderBar';
 
 // Notification function imports
@@ -79,7 +79,7 @@ function AppStackNavigator() {
       <AppStack.Screen name="Tabs" component={AppTabs} options={{headerShown: false,}}/>
       <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title="Details" showBack={true} showIcons={false} /> })}/>
       <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
-      <AppStack.Screen name="RentSelect" component={RentSelectScreen} options={{ headerShown: true, header: () => <HeaderBar title="Rent" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="RentSelect" component={RentConfirmationScreen} options={{ headerShown: true, header: () => <HeaderBar title="Rent" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Basket" component={BasketScreen} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
     </AppStack.Navigator>

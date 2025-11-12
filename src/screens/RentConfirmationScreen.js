@@ -11,7 +11,7 @@ import { colors } from '../theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 
-export default function RentSelectScreen() {
+export default function RentConfirmationScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const { id, startDate: startDateParam, nights: nightsParam } = route.params ?? {};
@@ -54,11 +54,16 @@ export default function RentSelectScreen() {
     }
 
     // Construct the message using the component's state
-    const content = `Rental request for ${item.title || 'item'}\nStart: ${startDate}\nNights: ${effectiveNights}\nTotal: £${estimatedTotal}\n\nAccept?`;
+    const content = `Rental request:\nStart: ${startDate}\nNights: ${effectiveNights}\nTotal: £${estimatedTotal}\n\nAccept?`;
+
+    // TODO: Encrypt message
+
+    // Date as timestamptz
+    const timestamp = new Date().toISOString();
 
     const { error } = await supabase
-      .from('messages')
-      .insert([{ sender_id: user.id, receiver_id: ownerId, content, item_id: item.id }]);
+      .from('chats')
+      .insert([{ sender_id: user.id, receiver_id: ownerId, chat: [content], item_id: item.id, created_at: timestamp, updated_at: timestamp }]);
 
     if (!error) {
       Alert.alert('Request sent', 'Your request has been sent to the lender.');

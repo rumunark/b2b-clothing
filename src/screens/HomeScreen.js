@@ -8,7 +8,7 @@ import { styles } from '../theme/styles';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function LandingScreen({ navigation }) {
+export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [rentalRequests, setRentalRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,17 +20,19 @@ export default function LandingScreen({ navigation }) {
       if (!user) { setRentalRequests([]); return; }
 
       const { data, error } = await supabase
-        .from('messages')
+        .from('chats')
         .select(`
           id,
           sender_id,
-          content,
+          profiles:sender_id (full_name),
+          chat,
           created_at,
+          updated_at,
           item_id,
           items:item_id (id, title, image_url)
         `)
         .eq('receiver_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
@@ -66,7 +68,7 @@ export default function LandingScreen({ navigation }) {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.listItemContainer}
-                  onPress={() => Alert.alert('Request from', item.content)}
+                  // TODO: Open ChatScreen
                 >
                   {item.items?.image_url ? (
                     <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
@@ -75,8 +77,8 @@ export default function LandingScreen({ navigation }) {
                   )}
                   <View style={styles.listItemContent}>
                     <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
-                    <Text style={styles.body}>{item.content.split('\n')[0]}</Text>
-                    <Text style={styles.body}>From: {item.sender_id}</Text>
+                    <Text style={styles.body}>{item.chat[0].split('\n')[0]}</Text>
+                    <Text style={styles.body}>From: {item.profiles.full_name}</Text>
                   </View>
                 </TouchableOpacity>
               )}
