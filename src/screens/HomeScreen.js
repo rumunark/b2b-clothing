@@ -10,14 +10,45 @@ import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const [rentalRequests, setRentalRequests] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [activeChats, setActiveChats] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const loadRentalRequests = useCallback(async () => {
+  // Load pending requests (for sellers)
+  const loadRequests = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('requests')
+        .select(`
+          id,
+          buyer_id,
+          start_date,
+          nights,
+          total_price,
+          status,
+          items:item_id (id, title, image_url, price_per_day),
+          profiles:buyer_id (full_name)
+        `)
+        .eq('seller_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setRequests(data || []);
+    } catch (e) {
+      console.error('Load requests error:', e);
+    }
+  }, []);
+
+  // Load active chats (for both buyers and sellers)
+  const loadActiveChats = useCallback(async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setRentalRequests([]); return; }
+      if (!user) { setActiveChats([]); return; }
 
       const { data, error } = await supabase
         .from('chats')
@@ -36,52 +67,120 @@ export default function HomeScreen({ navigation }) {
 
       if (error) throw error;
 
-      // Filter to show only the most recent request per sender
-      const latestRequests = {};
-      for (const req of data || []) {
-        if (!latestRequests[req.sender_id] || new Date(req.created_at) > new Date(latestRequests[req.sender_id].created_at)) {
-          latestRequests[req.sender_id] = req;
+      const latestChats = {};
+      for (const chat of data || []) {
+        if (!latestChats[chat.sender_id] || new Date(chat.updated_at) > new Date(latestChats[chat.sender_id].updated_at)) {
+          latestChats[chat.sender_id] = chat;
         }
       }
-      setRentalRequests(Object.values(latestRequests));
-
+      setActiveChats(Object.values(latestChats));
     } catch (e) {
-      Alert.alert('Error loading rental requests', e.message || String(e));
+      Alert.alert('Error loading chats', e.message || String(e));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadRentalRequests(); }, [loadRentalRequests]);
-  useFocusEffect(useCallback(() => { loadRentalRequests(); }, [loadRentalRequests]));
+  useEffect(() => {
+    loadRequests();
+    loadActiveChats();
+  }, []);
 
-  // Main messages/notifications appear here
+  useFocusEffect(useCallback(() => {
+    loadRequests();
+    loadActiveChats();
+  }, [loadRequests, loadActiveChats]));
+
+  const renderRequest = ({ item }) => {
+    const itemPrice = Number(item.items?.price_per_day || 0);
+    const netAmount = (item.total_price * 0.95).toFixed(2);
+    
+    return (
+      <TouchableOpacity
+        style={styles.listItemContainer}
+        onPress={() => navigation.navigate('Approval', { 
+          requestId: item.id,
+          buyerId: item.buyer_id,
+          buyerName: item.profiles.full_name,
+          item: item.items,
+          startDate: item.start_date,
+          nights: item.nights,
+          totalPrice: item.total_price,
+          netAmount: netAmount
+        })}
+      >
+        {item.items?.image_url ? (
+          <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
+        ) : (
+          <View style={styles.listItemImage} />
+        )}
+        <View style={styles.listItemContent}>
+          <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
+          <Text style={styles.body}>From: {item.profiles.full_name}</Text>
+          <Text style={[styles.body, { fontSize: 12, color: colors.gray500 }]}>
+            {item.nights} nights • {item.start_date}
+          </Text>
+          <Text style={[styles.price, { fontSize: 14, marginTop: 4 }]}>
+            You receive: £{netAmount}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderChat = ({ item }) => (
+    <TouchableOpacity
+      style={styles.listItemContainer}
+      onPress={() => navigation.navigate('Chat', {
+        chatId: item.id,
+        otherUserId: item.sender_id,
+        otherUserName: item.profiles.full_name,
+        item: item.items,
+      })}
+    >
+      {item.items?.image_url ? (
+        <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
+      ) : (
+        <View style={styles.listItemImage} />
+      )}
+      <View style={styles.listItemContent}>
+        <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
+        <Text style={styles.body}>From: {item.profiles.full_name}</Text>
+        <Text style={[styles.body, { fontSize: 12, color: colors.gray500 }]}>
+          {new Date(item.updated_at).toLocaleDateString()}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <Background>
       <View style={[styles.container, { paddingBottom: insets.bottom * 2, flex: 1 }]}>
-        {rentalRequests.length > 0 ? (
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>Rental Requests</Text>
+        
+        {/* Pending Requests Section (Seller View) */}
+        {requests.length > 0 && (
+          <View style={{ flex: 1, marginBottom: 16 }}>
+            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>📬 Pending Rental Requests</Text>
             <FlatList
-              data={rentalRequests}
+              data={requests}
               keyExtractor={(item) => String(item.id)}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.listItemContainer}
-                  // TODO: Open ChatScreen
-                >
-                  {item.items?.image_url ? (
-                    <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
-                  ) : (
-                    <View style={styles.listItemImage} />
-                  )}
-                  <View style={styles.listItemContent}>
-                    <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
-                    <Text style={styles.body}>{item.chat[0].split('\n')[0]}</Text>
-                    <Text style={styles.body}>From: {item.profiles.full_name}</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
+              renderItem={renderRequest}
+              nestedScrollEnabled={true}
+              scrollEnabled={false}
+            />
+          </View>
+        )}
+
+        {/* Active Chats Section */}
+        {activeChats.length > 0 ? (
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>💬 Active Chats</Text>
+            <FlatList
+              data={activeChats}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={renderChat}
+              nestedScrollEnabled={true}
+              scrollEnabled={false}
             />
           </View>
         ) : (

@@ -19,6 +19,7 @@ export default function RentConfirmationScreen() {
   const [startDate, setStartDate] = useState(startDateParam || dayjs().format('YYYY-MM-DD'));
   const [nights, setNights] = useState(typeof nightsParam === 'number' ? nightsParam : 3);
   const [customNights, setCustomNights] = useState('');
+  const [sending, setSending] = useState(false);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -35,47 +36,47 @@ export default function RentConfirmationScreen() {
   }, [id]);
 
   const handleSendRequest = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      Alert.alert('Not signed in', 'Please sign in first.');
-      return;
+    try {
+      setSending(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Not signed in', 'Please sign in first.');
+        return;
+      }
+
+      if (!item || !item.owner_id) {
+        Alert.alert('Error', 'Item details not loaded or missing owner.');
+        return;
+      }
+
+      const effectiveNights = Number(customNights || nights || 1);
+      const totalPrice = (Number(item.price_per_day || 0) * effectiveNights + Number(item.cleaning_price || 0));
+
+      const { error } = await supabase
+        .from('requests')
+        .insert([{
+          buyer_id: user.id,
+          seller_id: item.owner_id,
+          item_id: item.id,
+          start_date: startDate,
+          nights: effectiveNights,
+          total_price: totalPrice.toFixed(2),
+          status: 'pending'
+        }]);
+
+      if (!error) {
+        Alert.alert('Request sent', 'Your rental request has been sent to the seller for approval.');
+        // TODO: Send push notification to seller (notification service)
+        navigation.goBack();
+      } else {
+        Alert.alert('Send error', error.message);
+      }
+    } catch (e) {
+      Alert.alert('Send error', e.message || String(e));
+    } finally {
+      setSending(false);
     }
-    // Check for the 'item' state, not 'rows'
-    if (!item) {
-      Alert.alert('Item not loaded', 'The item details have not been loaded yet.');
-      return;
-    }
-
-    const ownerId = item.owner_id; // Get owner_id from the item object
-    if (!ownerId) {
-      Alert.alert('Nothing sent', 'Could not find a lender to message for this item.');
-      return;
-    }
-
-    // Construct the message using the component's state
-    const content = `Rental request:\nStart: ${startDate}\nNights: ${effectiveNights}\nTotal: £${estimatedTotal}\n\nAccept?`;
-
-    // TODO: Encrypt message
-
-    // Date as timestamptz
-    const timestamp = new Date().toISOString();
-
-    const { error } = await supabase
-      .from('chats')
-      .insert([{ sender_id: user.id, receiver_id: ownerId, chat: [content], item_id: item.id, created_at: timestamp, updated_at: timestamp }]);
-
-    if (!error) {
-      Alert.alert('Request sent', 'Your request has been sent to the lender.');
-      // Optionally, navigate the user away after success
-      // navigation.goBack();
-    } else {
-      Alert.alert('Send error', error.message);
-    }
-  } catch (e) {
-    Alert.alert('Send error', e.message || String(e));
-  }
-};
+  };
 
   const pricePerDay = Number(item?.price_per_day || 0);
   const cleaningFee = Number(item?.cleaning_price || 0);
@@ -89,7 +90,7 @@ export default function RentConfirmationScreen() {
     return (
       <Background>
         <View style={[styles.centered, { paddingBottom: insets.bottom }]}>
-          <Text style={{ color: colors.white }}>Loading…</Text>
+          <ActivityIndicator size="large" color={colors.yellow} />
         </View>
       </Background>
     );
@@ -97,69 +98,81 @@ export default function RentConfirmationScreen() {
 
   return (
     <Background>
-      <ScrollView contentContainerStyle={[styles.containerBackground, { paddingBottom: insets.bottom }]}>
-        <Text style={styles.screenTitle}>{item.title}</Text>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <ScrollView 
+          contentContainerStyle={[styles.containerBackground, { paddingBottom: insets.bottom }]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.screenTitle}>{item.title}</Text>
 
-        {/* <Text style={styles.label}>Start date</Text> */}
-        <Label>Start date</Label>
-        <Calendar
-          onDayPress={(d) => setStartDate(d.dateString)}
-          markedDates={{ [startDate]: { selected: true, selectedColor: colors.lightNavy } }}
-          theme={{ selectedDayTextColor: colors.white, todayTextColor: colors.lightNavy, arrowColor: colors.lightNavy }}
-        />
+          <Label>Start date</Label>
+          <Calendar
+            onDayPress={(d) => setStartDate(d.dateString)}
+            markedDates={{ [startDate]: { selected: true, selectedColor: colors.lightNavy } }}
+            theme={{ selectedDayTextColor: colors.white, todayTextColor: colors.lightNavy, arrowColor: colors.lightNavy }}
+          />
 
-        <View style={{ height: 12 }} />
-        <Label>Number of nights</Label>
-        <View style={styles.row}>
-          {[{k:1,t:'1 night'},{k:3,t:'3 nights'},{k:7,t:'1 week'}].map(opt => (
+          <View style={{ height: 12 }} />
+          <Label>Number of nights</Label>
+          <View style={styles.row}>
+            {[{k:1,t:'1 night'},{k:3,t:'3 nights'},{k:7,t:'1 week'}].map(opt => (
+              <TouchableOpacity
+                key={opt.k}
+                style={[styles.chip, nights === opt.k && styles.chipActive]}
+                onPress={() => { setNights(opt.k); setCustomNights(''); }}
+              >
+                <Text style={[styles.chipText, nights === opt.k && styles.chipTextActive]}>{opt.t}</Text>
+              </TouchableOpacity>
+            ))}
             <TouchableOpacity
-              key={opt.k}
-              style={[styles.chip, nights === opt.k && styles.chipActive]}
-              onPress={() => { setNights(opt.k); setCustomNights(''); }}
+              style={[styles.chip, customNights && styles.chipActive]}
+              onPress={() => setNights(null)}
             >
-              <Text style={[styles.chipText, nights === opt.k && styles.chipTextActive]}>{opt.t}</Text>
+              <Text style={[styles.chipText, customNights && styles.chipTextActive]}>Other</Text>
             </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={[styles.chip, customNights && styles.chipActive]}
-            onPress={() => setNights(null)}
-          >
-            <Text style={[styles.chipText, customNights && styles.chipTextActive]}>Other</Text>
-          </TouchableOpacity>
-        </View>
-        {!nights ? (
-          <View style={{ marginTop: 8 }}>
-            <Label>Custom nights</Label>
-            <TextInput
-              value={customNights}
-              onChangeText={setCustomNights}
-              keyboardType="numeric"
-              placeholder="e.g. 10"
-              style={styles.input}
-            />
           </View>
-        ) : null}
+          {!nights ? (
+            <View style={{ marginTop: 8 }}>
+              <Label>Custom nights</Label>
+              <TextInput
+                value={customNights}
+                onChangeText={setCustomNights}
+                keyboardType="numeric"
+                placeholder="e.g. 10"
+                style={styles.input}
+                returnKeyType="done"
+              />
+            </View>
+          ) : null}
 
-        <View style={{ height: 12 }} />
+          <View style={{ height: 12 }} />
 
-        <View style={styles.row}>
-          <Text style={styles.body}>Price per day:</Text>
-          <Text style={styles.value}>£{pricePerDay.toFixed(2)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.body}>Cleaning fee:</Text>
-          <Text style={styles.value}>£{cleaningFee.toFixed(2)}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.body}>Estimated total:</Text>
-          <Text style={styles.price}>£{estimatedTotal}</Text>
-        </View>
+          <View style={styles.row}>
+            <Text style={styles.body}>Price per day:</Text>
+            <Text style={styles.value}>£{pricePerDay.toFixed(2)}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.body}>Cleaning fee:</Text>
+            <Text style={styles.value}>£{cleaningFee.toFixed(2)}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.body}>Estimated total:</Text>
+            <Text style={styles.price}>£{estimatedTotal}</Text>
+          </View>
 
-        <View style={{ height: 16 }} />
+          <View style={{ height: 16 }} />
 
-        <UIButton onPress={handleSendRequest} variant="gold" size="lg">Send request</UIButton>
+          {/* TODO: Payment integration will be added here after seller approval */}
 
-      </ScrollView>
+          <UIButton onPress={handleSendRequest} variant="gold" size="lg" disabled={sending}>
+            {sending ? 'Sending...' : 'Send request'}
+          </UIButton>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Background>
   );
 }

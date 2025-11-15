@@ -196,7 +196,6 @@ export default function ListScreen({ navigation }) {
 
   return (
     <Background>
-      {/* TODO: Fix scrollview container to have correct padding, possibly using useBottomTabBarHeight */}
       <ScrollView contentContainerStyle={[styles.container, { paddingBottom: insets.bottom }]}>
         <Label>Title</Label>
         <Input value={title} onChangeText={setTitle} placeholder="e.g. Navy tuxedo" />
@@ -210,12 +209,10 @@ export default function ListScreen({ navigation }) {
           onChangeText={setTagsInput}
           placeholder="e.g. tuxedo, ball gown, fancy dress, pub golf"
         />
-
         
         <Label>Size</Label>
         <Input value={size} onChangeText={setSize} placeholder="S / M / L or 10 / 12…" />
 
-        
         <View style={styles.row}>
           {CATEGORIES.map((c) => (
             <TouchableOpacity key={c.key} onPress={() => setCategory(c.key)}

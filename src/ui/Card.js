@@ -7,6 +7,7 @@
  */
 
 import { View, StyleSheet } from 'react-native';
+import { colors } from '../theme/colors';
 
 /**
  * Card Component
@@ -22,11 +23,11 @@ export default function Card({ children, style }) {
 // Card component styles
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255,255,255,0.92)', // Semi-transparent white background
+    backgroundColor: colors.white,
     borderRadius: 14, // Rounded corners for modern appearance
-    padding: 16, // Internal spacing for content
-    borderWidth: 2, // Subtle border
-    borderColor: 'rgba(255,255,255,0.9)' // Light border color
+    padding: 8, // Internal spacing for content
+    borderWidth: 2,
+    borderColor: colors.navy 
   },
 });
 

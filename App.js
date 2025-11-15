@@ -20,6 +20,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LoginScreen from './src/screens/LoginScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import ChatScreen from './src/screens/ChatScreen';
+import RentApprovalScreen from './src/screens/RentApprovalScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import AppTabs from './src/navigation/AppTabs';
@@ -77,6 +79,8 @@ function AppStackNavigator() {
   return (
     <AppStack.Navigator initialRouteName="Tabs">
       <AppStack.Screen name="Tabs" component={AppTabs} options={{headerShown: false,}}/>
+      <AppStack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+      <AppStack.Screen name="Approval" component={RentApprovalScreen} options={{ headerShown: true, header: () => <HeaderBar title="Approve" showBack={true} showIcons={false} /> }}/>
       <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title="Details" showBack={true} showIcons={false} /> })}/>
       <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="RentSelect" component={RentConfirmationScreen} options={{ headerShown: true, header: () => <HeaderBar title="Rent" showBack={true} showIcons={false} /> }} />

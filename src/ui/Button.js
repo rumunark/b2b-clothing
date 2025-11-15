@@ -41,7 +41,6 @@ const buttonVariants = StyleSheet.create({
   // Base styles applied to all buttons
   base: { 
     maxWidth: "100%",
-    // minWidth: "48%",
     borderRadius: 8, 
     borderWidth: 2, 
     flexDirection: 'row',
