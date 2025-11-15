@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import dayjs from 'dayjs';
@@ -86,29 +86,22 @@ export default function RentConfirmationScreen() {
     return total.toFixed(2);
   }, [pricePerDay, effectiveNights, cleaningFee]);
 
-  if (!item) {
+    if (!item) {
+      return (
+        <Background>
+          <View style={[styles.centered, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+            <ActivityIndicator size="large" color={colors.yellow} />
+            <Text style={[styles.body, { marginTop: 16 }]}>Loading item details...</Text>
+          </View>
+        </Background>
+      );
+    }
+  
     return (
       <Background>
-        <View style={[styles.centered, { paddingBottom: insets.bottom }]}>
-          <ActivityIndicator size="large" color={colors.yellow} />
-        </View>
-      </Background>
-    );
-  }
-
-  return (
-    <Background>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-      >
-        <ScrollView 
-          contentContainerStyle={[styles.containerBackground, { paddingBottom: insets.bottom }]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.screenTitle}>{item.title}</Text>
-
+          <ScrollView 
+            contentContainerStyle={[styles.containerBackground, { paddingBottom: insets.bottom }]}>
+            <Text style={styles.screenTitle}>{item.title}</Text>
           <Label>Start date</Label>
           <Calendar
             onDayPress={(d) => setStartDate(d.dateString)}
@@ -172,7 +165,6 @@ export default function RentConfirmationScreen() {
             {sending ? 'Sending...' : 'Send request'}
           </UIButton>
         </ScrollView>
-      </KeyboardAvoidingView>
     </Background>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
@@ -155,17 +155,16 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={[styles.container, { paddingBottom: insets.bottom * 2, flex: 1 }]}>
+      <ScrollView style={[styles.container, { paddingBottom: insets.bottom * 2 }]}>
         
         {/* Pending Requests Section (Seller View) */}
         {requests.length > 0 && (
-          <View style={{ flex: 1, marginBottom: 16 }}>
-            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>📬 Pending Rental Requests</Text>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>Pending Requests</Text>
             <FlatList
               data={requests}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderRequest}
-              nestedScrollEnabled={true}
               scrollEnabled={false}
             />
           </View>
@@ -173,29 +172,30 @@ export default function HomeScreen({ navigation }) {
 
         {/* Active Chats Section */}
         {activeChats.length > 0 ? (
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>💬 Active Chats</Text>
+          <View>
+            <Text style={[styles.screenTitle, { marginBottom: 12 }]}>Active Chats</Text>
             <FlatList
               data={activeChats}
               keyExtractor={(item) => String(item.id)}
               renderItem={renderChat}
-              nestedScrollEnabled={true}
               scrollEnabled={false}
             />
           </View>
         ) : (
-          <View style={styles.centered}>
-            <Text style={styles.brandTitle}>b2b clothing</Text>
-            <Text style={styles.tagline}>Cheaper than buying • Cooler than resale • Greener than fast fashion</Text>
-            <View style={{ height: 20 }} />
-            <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'Rent' })} style={{ width: '50%' }}>Enter the lineup →</UIButton>
-            <View style={{ height: 12 }} />
-            <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'List' })} style={{ width: '50%' }}>Drop your gear →</UIButton>
-            <View style={{ height: 24 }} />
-            <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
-          </View>
+          requests.length === 0 && (
+            <View style={styles.centered}>
+              <Text style={styles.brandTitle}>b2b clothing</Text>
+              <Text style={styles.tagline}>Cheaper than buying • Cooler than resale • Greener than fast fashion</Text>
+              <View style={{ height: 20 }} />
+              <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'Rent' })} style={{ width: '50%' }}>Enter the lineup →</UIButton>
+              <View style={{ height: 12 }} />
+              <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'List' })} style={{ width: '50%' }}>Drop your gear →</UIButton>
+              <View style={{ height: 24 }} />
+              <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
+            </View>
+          )
         )}
-      </View>
+      </ScrollView>
     </Background>
   );
 }

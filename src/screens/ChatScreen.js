@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TextInput, 
-  TouchableOpacity, 
-  KeyboardAvoidingView, 
-  Platform, 
-  ActivityIndicator, 
-  Alert,
-  StyleSheet,
-  Keyboard
-} from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 import { decryptMessage, encryptMessage, getPrivateKey, getPublicKey } from '../lib/encryption';
 import { styles as themeStyles } from '../theme/styles';
@@ -20,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../theme/colors';
 
+//TODO: Port to main styles file
 const chatStyles = StyleSheet.create({
   header: {
     flexDirection: 'row',

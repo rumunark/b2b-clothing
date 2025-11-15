@@ -209,10 +209,6 @@ export default function ListScreen({ navigation }) {
           onChangeText={setTagsInput}
           placeholder="e.g. tuxedo, ball gown, fancy dress, pub golf"
         />
-        
-        <Label>Size</Label>
-        <Input value={size} onChangeText={setSize} placeholder="S / M / L or 10 / 12…" />
-
         <View style={styles.row}>
           {CATEGORIES.map((c) => (
             <TouchableOpacity key={c.key} onPress={() => setCategory(c.key)}
@@ -222,7 +218,9 @@ export default function ListScreen({ navigation }) {
           ))}
         </View>
 
-        
+        <Label>Size</Label>
+        <Input value={size} onChangeText={setSize} placeholder="S / M / L or 10 / 12…" />
+
         <Label>Rental price per night (£)</Label>
         <Input value={pricePerNight} onChangeText={setPricePerNight} keyboardType="numeric" placeholder="e.g. 15" />
 

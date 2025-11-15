@@ -84,7 +84,6 @@ export default function BasketScreen() {
         const ownerId = basketItem.items?.owner_id;
         if (!ownerId) continue;
         const content = `Rental request for ${basketItem.items?.title || 'item'}\nStart: ${basketItem.start_date}\nNights: ${basketItem.nights}\nTotal: £${Number(basketItem.total || 0).toFixed(2)}\n\nAccept?`;
-        Alert.alert('Debug Item ID', `Item ID: ${basketItem.item_id}`); // Debugging line
         const { error } = await supabase
           .from('messages')
           .insert([{ sender_id: user.id, receiver_id: ownerId, content, item_id: basketItem.item_id }]);
