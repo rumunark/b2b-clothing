@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, RefreshControl, TextInput, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -11,27 +11,31 @@ import { supabase } from '../lib/supabaseClient';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
+import Fuse from 'fuse.js';
 
 export default function RentListScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const inputRef = useRef(null);
-  const [loading, setLoading] = useState(false);  const [items, setItems] = useState([]);
+  
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [query, setQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [carouselIndexMap, setCarouselIndexMap] = useState(new Map());
   const [imageWidthMap, setImageWidthMap] = useState(new Map());
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Filters
   const [filterCategory, setFilterCategory] = useState('');
   const [filterSize, setFilterSize] = useState('');
   const [filterPriceMin, setFilterPriceMin] = useState('');
   const [filterPriceMax, setFilterPriceMax] = useState('');
   const [wishlistItems, setWishlistItems] = useState(new Set());
 
-    const fetchItems = useCallback(async () => {
+  const fetchItems = useCallback(async () => {
     setLoading(true);
-    // Try to include tag fields; if the schema doesn't have them yet, fall back
     let list = [];
     let { data, error } = await supabase
       .from('items')
@@ -55,7 +59,7 @@ export default function RentListScreen() {
     }
 
     setAllItems(list);
-    setItems(list); // show all items by default
+    setItems(list);
     setLoading(false);
   }, []);
 
@@ -65,22 +69,30 @@ export default function RentListScreen() {
     }, [fetchItems])
   );
 
-  // Filter by query (tags-first) + filters (category/size/price)
-  useEffect(() => {
-    const q = (query || '').trim().toLowerCase();
-    const filtered = (allItems || []).filter((item) => {
-      // query matching
-      if (q) {
-        const hasTags = (Array.isArray(item.tags) && item.tags.length > 0) || (item.tags_text && item.tags_text.length > 0);
-        const tagsJoined = Array.isArray(item.tags) ? item.tags.join(' ') : '';
-        const tagsText = item.tags_text || '';
-        const tagHay = `${tagsJoined} ${tagsText}`.toLowerCase();
-        const title = (item.title || '').toLowerCase();
-        const desc = (item.description || '').toLowerCase();
-        const match = hasTags ? tagHay.includes(q) : `${title} ${desc}`.includes(q);
-        if (!match) return false;
-      }
+  // useMemo so we don't rebuild the search index on every render, only when items change.
+  const fuse = useMemo(() => {
+    return new Fuse(allItems, {
+      keys: [
+        { name: 'title', weight: 2 },
+        { name: 'tags', weight: 1.5 },
+        'category',
+        'description'
+      ],
+      threshold: 0.4,
+      ignoreLocation: true,
+      minMatchCharLength: 2,
+    });
+  }, [allItems]);
 
+  useEffect(() => {
+    let resultList = allItems;
+    const q = (query || '').trim();
+    if (q) {
+      resultList = fuse.search(q).map(result => result.item);
+    }
+
+    // Apply strict filters (Category, Size, Price) on the result of A
+    const filtered = resultList.filter((item) => {
       // category filter
       if (filterCategory) {
         if ((item.category || '') !== filterCategory) return false;
@@ -104,7 +116,7 @@ export default function RentListScreen() {
       return true;
     });
     setItems(filtered);
-  }, [query, allItems, filterCategory, filterSize, filterPriceMin, filterPriceMax]);
+  }, [query, allItems, fuse, filterCategory, filterSize, filterPriceMin, filterPriceMax]);
 
   const toggleWishlist = useCallback(async (item) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -112,7 +124,6 @@ export default function RentListScreen() {
 
     const isWishlisted = wishlistItems.has(item.id);
     if (isWishlisted) {
-      // Remove from wishlist
       const { error } = await supabase
         .from('wishlist')
         .delete()
@@ -126,7 +137,6 @@ export default function RentListScreen() {
         Alert.alert('Removed from wishlist', 'The item has been removed from your wishlist.');
       }
     } else {
-      // Add to wishlist
       const { error } = await supabase.from('wishlist').upsert({
         user_id: user.id, listing_id: item.id,
       }, { onConflict: 'user_id,listing_id' });
