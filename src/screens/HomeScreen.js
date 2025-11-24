@@ -55,22 +55,33 @@ export default function HomeScreen({ navigation }) {
         .select(`
           id,
           sender_id,
-          profiles:sender_id (full_name),
+          receiver_id,
           chat,
           created_at,
           updated_at,
           item_id,
-          items:item_id (id, title, image_url)
+          items:item_id (id, title, image_url),
+          sender:sender_id (full_name),
+          receiver:receiver_id (full_name)
         `)
-        .eq('receiver_id', user.id)
+        .or(`sender_id.eq.${user.id}, receiver_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
       const latestChats = {};
+      
       for (const chat of data || []) {
-        if (!latestChats[chat.sender_id] || new Date(chat.updated_at) > new Date(latestChats[chat.sender_id].updated_at)) {
-          latestChats[chat.sender_id] = chat;
+        const isReciever = chat.sender_id === user.id;
+
+        const partnerId = isReciever ? chat.receiver_id : chat.sender_id;
+        const partnerName = isReciever ? chat.receiver?.full_name : chat.sender?.full_name;
+
+        chat.partnerId = partnerId;
+        chat.partnerName = partnerName || 'Unknown User'; // Fallback if null
+
+        if (!latestChats[partnerId] || new Date(chat.updated_at) > new Date(latestChats[partnerId].updated_at)) {
+          latestChats[partnerId] = chat;
         }
       }
       setActiveChats(Object.values(latestChats));
@@ -92,8 +103,9 @@ export default function HomeScreen({ navigation }) {
   }, [loadRequests, loadActiveChats]));
 
   const renderRequest = ({ item }) => {
-    const itemPrice = Number(item.items?.price_per_day || 0);
+    //const itemPrice = Number(item.items?.price_per_day || 0);
     const netAmount = (item.total_price * 0.95).toFixed(2);
+    const buyerName = item.profiles?.full_name || 'Unknown User'; 
     
     return (
       <TouchableOpacity
@@ -101,7 +113,7 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('Approval', { 
           requestId: item.id,
           buyerId: item.buyer_id,
-          buyerName: item.profiles.full_name,
+          buyerName: buyerName,
           item: item.items,
           startDate: item.start_date,
           nights: item.nights,
@@ -116,7 +128,7 @@ export default function HomeScreen({ navigation }) {
         )}
         <View style={styles.listItemContent}>
           <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
-          <Text style={styles.body}>From: {item.profiles.full_name}</Text>
+          <Text style={styles.body}>From: {buyerName}</Text>
           <Text style={[styles.body, { fontSize: 12, color: colors.gray500 }]}>
             {item.nights} nights • {item.start_date}
           </Text>
@@ -133,8 +145,8 @@ export default function HomeScreen({ navigation }) {
       style={styles.listItemContainer}
       onPress={() => navigation.navigate('Chat', {
         chatId: item.id,
-        otherUserId: item.sender_id,
-        otherUserName: item.profiles.full_name,
+        otherUserId: item.partnerId,     // Use the calculated ID
+        otherUserName: item.partnerName, // Use the calculated Name
         item: item.items,
       })}
     >
@@ -145,7 +157,10 @@ export default function HomeScreen({ navigation }) {
       )}
       <View style={styles.listItemContent}>
         <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
-        <Text style={styles.body}>From: {item.profiles.full_name}</Text>
+        
+        {/* Display the calculated Partner Name */}
+        <Text style={styles.body}>With: {item.partnerName}</Text>
+        
         <Text style={[styles.body, { fontSize: 12, color: colors.gray500 }]}>
           {new Date(item.updated_at).toLocaleDateString()}
         </Text>
