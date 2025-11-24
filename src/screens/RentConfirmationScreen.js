@@ -5,8 +5,7 @@ import { Calendar } from 'react-native-calendars';
 import dayjs from 'dayjs';
 import { supabase } from '../lib/supabaseClient';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
-import Label from '../ui/Label';
+import { Button, Label } from '../ui'
 import { colors } from '../theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
@@ -161,9 +160,9 @@ export default function RentConfirmationScreen() {
 
           {/* TODO: Payment integration will be added here after seller approval */}
 
-          <UIButton onPress={handleSendRequest} variant="gold" size="lg" disabled={sending}>
+          <Button onPress={handleSendRequest} variant="gold" size="lg" disabled={sending}>
             {sending ? 'Sending...' : 'Send request'}
-          </UIButton>
+          </Button>
         </ScrollView>
     </Background>
   );

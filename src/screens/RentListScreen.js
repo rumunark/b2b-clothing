@@ -3,9 +3,7 @@ import { View, Text, FlatList, Image, TouchableOpacity, RefreshControl, TextInpu
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import Card from '../ui/Card';
-import Label from '../ui/Label';
-import UIButton from '../ui/Button';
+import { Card, Label, Button } from '../ui'
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabaseClient';
 import { useFocusEffect } from '@react-navigation/native';
@@ -234,9 +232,9 @@ export default function RentListScreen() {
             />
           </TouchableOpacity>
 
-          <UIButton onPress={() => setShowFilters((v) => !v)} size="sm" icon="options-outline" iconColor={colors.white}>
+          <Button onPress={() => setShowFilters((v) => !v)} size="sm" icon="options-outline" iconColor={colors.white}>
             Filters
-          </UIButton>
+          </Button>
         </View>
 
         {showFilters && (

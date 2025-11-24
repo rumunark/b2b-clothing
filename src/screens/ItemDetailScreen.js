@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import Button from '../ui/Button';
+import { Button } from '../ui'
 import { useRoute } from '@react-navigation/native';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
@@ -258,6 +258,7 @@ export default function ItemDetailScreen() {
               </View>
             </View>
 
+            <Button onPress={addToBasket} variant="gold">Add to basket</Button>
             <Button onPress={handleSendRequest} variant="gold">Send Request</Button>
           </View>
         )}

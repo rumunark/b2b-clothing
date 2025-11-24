@@ -6,9 +6,7 @@ import dayjs from 'dayjs';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 import Background from '../components/Background';
-import Input from '../ui/Input';
-import Label from '../ui/Label';
-import UIButton from '../ui/Button';
+import { Input, Label, Button } from '../ui'
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { createConnectAccount, createOnboardingLink } from '../lib/stripeEdge';
@@ -267,9 +265,9 @@ export default function ListScreen({ navigation }) {
         <Label>Cleaning price (optional, £)</Label>
         <Input value={cleaningPrice} onChangeText={setCleaningPrice} keyboardType="numeric" placeholder="e.g. 7" />
 
-        <UIButton variant="outline" onPress={pickImages}>
+        <Button variant="outline" onPress={pickImages}>
           {assets.length > 0 ? `Selected ${assets.length} image(s)` : 'Upload photos'}
-        </UIButton>
+        </Button>
 
         <View style={styles.row}>
           {assets.map((a) => (
@@ -278,9 +276,9 @@ export default function ListScreen({ navigation }) {
         </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <UIButton variant="gold" onPress={onSubmit}>
+        <Button variant="gold" onPress={onSubmit}>
           {loading ? 'Saving…' : 'Create Listing'}
-        </UIButton>
+        </Button>
       </ScrollView>
     </Background>
   );

@@ -136,7 +136,7 @@ export default function ChatScreen({ route, navigation }) {
 
       const { data: chatData, error: chatError } = await supabase
         .from('chats')
-        .select('chat, sender_id, receiver_id')
+        .select('chat')
         .eq('id', chatId)
         .single();
 
@@ -146,33 +146,23 @@ export default function ChatScreen({ route, navigation }) {
       const encryptedMessages = chatData?.chat || [];
       
       for (const encryptedMsg of encryptedMessages) {
-        // DECRYPT WITH BOTH POSSIBLE KEY COMBINATIONS
-        let decryptedContent = null;
-        
-        // Try as if current user is recipient
-        decryptedContent = decryptMessage(encryptedMsg, otherPublicKey, privateKey);
-        
-        // If that fails, try as if current user is sender (for self-testing)
-        if (!decryptedContent) {
-          const myPublicKey = await getPublicKey(user.id);
-          decryptedContent = decryptMessage(encryptedMsg, myPublicKey, privateKey);
-        }
+
+        const decryptedContent = decryptMessage(encryptedMsg, otherPublicKey, privateKey);
         
         if (decryptedContent) {
           try {
             const messageObj = JSON.parse(decryptedContent);
-            // TRACK SENDER via embedded sender_id in payload
             decryptedMessages.push({
               ...messageObj,
-              id: `${messageObj.created_at}-${Math.random()}`,
+              id: `${messageObj.created_at}-${Math.random()}`, // Ensure unique keys for FlatList
             });
           } catch (e) {
-            console.error('Failed to parse message:', e);
+            console.error('Failed to parse JSON content:', e);
           }
         }
       }
 
-      // SORT: newest at bottom (standard chat behavior)
+      // Oldest to Newest
       decryptedMessages.sort((a, b) => 
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
@@ -198,9 +188,9 @@ export default function ChatScreen({ route, navigation }) {
 
       const privateKey = await getPrivateKey(currentUserId);
       const otherPublicKey = await getPublicKey(otherUserId);
-      const myPublicKey = await getPublicKey(currentUserId);
 
       const messagePayload = {
+        id: Date.now().toString(), 
         content: newMessage.trim(),
         sender_id: currentUserId,
         created_at: new Date().toISOString(),

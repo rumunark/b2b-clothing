@@ -9,6 +9,7 @@
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import Button from './Button';
+import Button from './Button';
 
 /**
  * Alert Component

@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native';
 import Background from '../components/Background';
-import Button from '../ui/Button';
-import Alert from '../ui/Alert';
+import { Button } from '../ui'
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';

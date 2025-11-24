@@ -3,8 +3,7 @@ import { View, Text, Alert, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabaseClient';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
-import Label from '../ui/Label';
+import { Button, Label } from '../ui'
 import { colors } from '../theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
@@ -132,12 +131,12 @@ export default function RentApprovalScreen() {
         <View style={{ height: 24 }} />
 
         <View style={styles.row}>
-          <UIButton onPress={handleDecline} variant="outline" size="lg" disabled={processing} style={{ flex: 1 }}>
+          <Button onPress={handleDecline} variant="outline" size="lg" disabled={processing} style={{ flex: 1 }}>
             {processing ? 'Processing...' : 'Decline'}
-          </UIButton>
-          <UIButton onPress={handleApprove} variant="gold" size="lg" disabled={processing} style={{ flex: 1 }}>
+          </Button>
+          <Button onPress={handleApprove} variant="gold" size="lg" disabled={processing} style={{ flex: 1 }}>
             {processing ? 'Processing...' : 'Approve'}
-          </UIButton>
+          </Button>
         </View>
       </ScrollView>
     </Background>

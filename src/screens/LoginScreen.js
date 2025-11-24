@@ -9,9 +9,7 @@ import { useState } from 'react';
 import { View, Text } from 'react-native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import Input from '../ui/Input';
-import Label from '../ui/Label';
-import UIButton from '../ui/Button';
+import { Input, Label, Button } from '../ui'
 import { supabase } from '../lib/supabaseClient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
@@ -66,7 +64,7 @@ export default function LoginScreen() {
         <Input placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <View style={{ height: 16 }} />
-        <UIButton variant="gold" onPress={onLogin}>{loading ? '...' : 'Login'}</UIButton>
+        <Button variant="gold" onPress={onLogin}>{loading ? '...' : 'Login'}</Button>
       </View>
     </Background>
   );

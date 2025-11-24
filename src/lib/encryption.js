@@ -111,28 +111,25 @@ export async function getPrivateKey(userId) {
   }
 }
 
-export function encryptMessage(message, recipientPublicKey_b64, senderPrivateKey_b64) {
+export function encryptMessage(message, peerPublicKey_b64, userPrivateKey_b64) {
   try {
-    // Validate inputs
-    if (!recipientPublicKey_b64 || !senderPrivateKey_b64) {
+    if (!peerPublicKey_b64 || !userPrivateKey_b64) {
       throw new Error('Missing keys for encryption');
     }
 
-    const recipientPublicKey = base64ToUint8Array(recipientPublicKey_b64);
-    const senderPrivateKey = base64ToUint8Array(senderPrivateKey_b64);
+    const peerPublicKey = base64ToUint8Array(peerPublicKey_b64);
+    const userPrivateKey = base64ToUint8Array(userPrivateKey_b64);
 
-    if (recipientPublicKey.length !== 32 || senderPrivateKey.length !== 32) {
-      throw new Error(`Key size mismatch: public=${recipientPublicKey.length}, private=${senderPrivateKey.length} (both must be 32)`);
-    }
+    // Create a shared key from the pair (can be either way aorund using box.before)
+    const sharedKey = nacl.box.before(peerPublicKey, userPrivateKey);
 
     const nonce = nacl.randomBytes(nacl.box.nonceLength);
     const messageUint8 = stringToUint8Array(message);
 
-    const encrypted = nacl.box(
+    const encrypted = nacl.box.after(
       messageUint8,
       nonce,
-      recipientPublicKey,
-      senderPrivateKey
+      sharedKey
     );
 
     const fullMessage = new Uint8Array(nonce.length + encrypted.length);
@@ -146,28 +143,25 @@ export function encryptMessage(message, recipientPublicKey_b64, senderPrivateKey
   }
 }
 
-export function decryptMessage(encryptedMessage_b64, senderPublicKey_b64, recipientPrivateKey_b64) {
+export function decryptMessage(encryptedMessage_b64, peerPublicKey_b64, userPrivateKey_b64) {
   try {
-    if (!encryptedMessage_b64 || !senderPublicKey_b64 || !recipientPrivateKey_b64) {
+    if (!encryptedMessage_b64 || !peerPublicKey_b64 || !userPrivateKey_b64) {
       throw new Error('Missing parameters for decryption');
     }
 
-    const senderPublicKey = base64ToUint8Array(senderPublicKey_b64);
-    const recipientPrivateKey = base64ToUint8Array(recipientPrivateKey_b64);
+    const peerPublicKey = base64ToUint8Array(peerPublicKey_b64);
+    const userPrivateKey = base64ToUint8Array(userPrivateKey_b64);
 
-    if (senderPublicKey.length !== 32 || recipientPrivateKey.length !== 32) {
-      throw new Error(`Key size mismatch: public=${senderPublicKey.length}, private=${recipientPrivateKey.length} (both must be 32)`);
-    }
+    const sharedKey = nacl.box.before(peerPublicKey, userPrivateKey);
 
     const fullMessage = base64ToUint8Array(encryptedMessage_b64);
     const nonce = fullMessage.slice(0, nacl.box.nonceLength);
     const message = fullMessage.slice(nacl.box.nonceLength);
 
-    const decrypted = nacl.box.open(
+    const decrypted = nacl.box.open.after(
       message,
       nonce,
-      senderPublicKey,
-      recipientPrivateKey
+      sharedKey
     );
 
     if (!decrypted) {
@@ -176,7 +170,8 @@ export function decryptMessage(encryptedMessage_b64, senderPublicKey_b64, recipi
 
     return uint8ArrayToString(decrypted);
   } catch (e) {
-    console.error("Decryption failed:", e.message);
+    // Don't crash the app, just return null
+    console.log("Decryption attempt failed:", e.message);
     return null;
   }
 }

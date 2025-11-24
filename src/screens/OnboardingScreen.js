@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import Dropdown from '../ui/Dropdown';
 import * as ImagePicker from 'expo-image-picker';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
+import { Button } from '../ui'
 import { supabase } from '../lib/supabaseClient';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -114,12 +114,12 @@ export default function OnboardingScreen() {
     <Background>
       <View style={[styles.containerBackground, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
-        <UIButton onPress={pickAvatar} variant="outline" size="md">{avatarUri ? 'Change avatar' : 'Pick avatar'}</UIButton>
+        <Button onPress={pickAvatar} variant="outline" size="md">{avatarUri ? 'Change avatar' : 'Pick avatar'}</Button>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
         <Dropdown title="Select a City" enumType='location' value={city} onValueChange={setCity} placeholder="Select a City"/>
         <TextInput style={styles.input} placeholder="DOB (DD/MM/YYYY)" value={dob} onChangeText={setDob} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <UIButton onPress={onSave} variant="gold">Save</UIButton>
+        <Button onPress={onSave} variant="gold">Save</Button>
       </View>
     </Background>
   );

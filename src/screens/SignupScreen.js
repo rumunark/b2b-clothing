@@ -13,11 +13,7 @@ import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import { styles } from '../theme/styles';
 import Background from '../components/Background';
-import Input from '../ui/Input';
-import Label from '../ui/Label';
-import UIButton from '../ui/Button';
-import UIAlert from '../ui/Alert';
-import Dropdown from '../ui/Dropdown';
+import { Input, Label, Alert, Button, Dropdown } from '../ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -142,11 +138,11 @@ export default function SignupScreen() {
           placeholder="Select a City"
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <UIButton variant="gold" onPress={onSignup}>{loading ? '...' : 'Sign up'}</UIButton>
+        <Button variant="gold" onPress={onSignup}>{loading ? '...' : 'Sign up'}</Button>
       </View>
       
       {/* Email verification alert */}
-      <UIAlert
+      <Alert
         visible={showEmailAlert}
         onClose={handleCloseEmailAlert}
         title="Check Your Email"
