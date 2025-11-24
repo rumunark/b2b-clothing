@@ -8,7 +8,7 @@
 
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
-import UIButton from './Button';
+import Button from './Button';
 
 /**
  * Alert Component
@@ -20,13 +20,12 @@ import UIButton from './Button';
  * @param {string} buttonText - Text for the primary action button (default: "OK")
  * @param {object} style - Additional styles for the alert container
  */
-export default function UIAlert({ 
-  visible, 
-  onClose, 
+export default function Alert({ 
+  visible = True, 
+  onClose = () => {}, 
   title, 
   message, 
   buttonText = "OK", 
-  style 
 }) {
   return (
     <Modal
@@ -40,9 +39,9 @@ export default function UIAlert({
           {title && <Text style={styles.title}>{title}</Text>}
           {message && <Text style={styles.message}>{message}</Text>}
           <View style={styles.buttonContainer}>
-            <UIButton variant="solid" onPress={onClose}>
+            <Button variant="solid" onPress={onClose}>
               {buttonText}
-            </UIButton>
+            </Button>
           </View>
         </View>
       </View>

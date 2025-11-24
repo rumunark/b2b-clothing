@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
+import Button from '../ui/Button';
+import Alert from '../ui/Alert';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
@@ -74,26 +75,42 @@ export default function BasketScreen() {
   };
 
   const handleSendRequest = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { Alert.alert('Not signed in', 'Please sign in first.'); return; }
-      if (!rows.length) { Alert.alert('Basket empty', 'Add an item to your basket first.'); return; }
+    for (const basketItem of rows) {
+      try {
+        setSending(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          Alert.alert('Not signed in', 'Please sign in first.');
+          return;
+        }
 
-      let sent = 0;
-      for (const basketItem of rows) {
-        const ownerId = basketItem.items?.owner_id;
-        if (!ownerId) continue;
-        const content = `Rental request for ${basketItem.items?.title || 'item'}\nStart: ${basketItem.start_date}\nNights: ${basketItem.nights}\nTotal: £${Number(basketItem.total || 0).toFixed(2)}\n\nAccept?`;
+        if (!item || !item.owner_id) {
+          Alert.alert('Error', 'Item details not loaded or missing owner.');
+          return;
+        }
+
+        const effectiveNights = Number(customNights || nights || 1);
+        const totalPrice = (Number(item.price_per_day || 0) * effectiveNights + Number(item.cleaning_price || 0));
+
         const { error } = await supabase
-          .from('messages')
-          .insert([{ sender_id: user.id, receiver_id: ownerId, content, item_id: basketItem.item_id }]);
-        if (!error) sent += 1;
+          .from('requests')
+          .insert([{
+            buyer_id: user.id,
+            seller_id: item.owner_id,
+            item_id: item.id,
+            start_date: startDate,
+            nights: effectiveNights,
+            total_price: totalPrice.toFixed(2),
+            status: 'pending'
+          }]);
+
+      } catch (e) {
+        Alert.alert('Send error', e.message || String(e));
+      } finally {
+        setSending(false);
       }
-      if (sent > 0) Alert.alert('Request sent', `Sent ${sent} request(s) to lender(s).`);
-      else Alert.alert('Nothing sent', 'Could not find a lender to message for these items.');
-    } catch (e) {
-      Alert.alert('Send error', e.message || String(e));
     }
+    Alert({ title: 'Requests sent for:', message: '${rows.title}' });
   };
 
   return (
@@ -135,7 +152,7 @@ export default function BasketScreen() {
           }
         />
         {rows.length > 0 && (
-          <UIButton onPress={handleSendRequest} variant="gold">Send request for all</UIButton>
+          <Button onPress={handleSendRequest} variant="gold">Send request for all</Button>
         )}
       </View>
     </Background>

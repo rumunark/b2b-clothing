@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
+import Button from '../ui/Button';
 import { useRoute } from '@react-navigation/native';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,13 +20,14 @@ export default function ItemDetailScreen() {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   // rent picker state
-  const [showRent, setShowRent] = useState(false);
+  const [showRent, setShowRent] = useState(route.params.showRent);
   const [startDate, setStartDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [nights, setNights] = useState(3);
   const [customNights, setCustomNights] = useState('');
   const [imgIndex, setImgIndex] = useState(0);
   const [carouselWidth, setCarouselWidth] = useState(0);
   const insets = useSafeAreaInsets();
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -94,26 +95,41 @@ export default function ItemDetailScreen() {
     }
   };
 
-  const addToBasket = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { Alert.alert('Sign in required', 'Please log in first.'); return; }
-    
-    const { error } = await supabase.from('basket').insert([{
-      user_id: user.id,
-      item_id: item.id,
-      start_date: startDate,
-      nights: effectiveNights,
-      price_per_day: pricePerDay,
-      cleaning_price: cleaningFee || null,
-      total: Number(estimatedTotal)
-    }]);
+  const handleSendRequest = async () => {
+    try {
+      setSending(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Not signed in', 'Please sign in first.');
+        return;
+      }
 
-    if (error) {
-      Alert.alert('Basket error', error.message);
-      return;
+      if (!item || !item.owner_id) {
+        Alert.alert('Error', 'Item details not loaded or missing owner.');
+        return;
+      }
+
+      const effectiveNights = Number(customNights || nights || 1);
+      const totalPrice = (Number(item.price_per_day || 0) * effectiveNights + Number(item.cleaning_price || 0));
+
+      const { error } = await supabase
+        .from('requests')
+        .insert([{
+          buyer_id: user.id,
+          seller_id: item.owner_id,
+          item_id: item.id,
+          start_date: startDate,
+          nights: effectiveNights,
+          total_price: totalPrice.toFixed(2),
+          status: 'pending'
+        }]);
+
+    } catch (e) {
+      Alert.alert('Send error', e.message || String(e));
+    } finally {
+      setSending(false);
     }
-    Alert.alert('Added to basket', `Start: ${startDate}\nNights: ${effectiveNights}\nTotal: £${estimatedTotal}`);
-    setShowRent(false);
+    Alert.alert('Your rental request has been sent to the seller for approval.');
   };
 
   if (!item) {
@@ -180,8 +196,8 @@ export default function ItemDetailScreen() {
 
         {/* Rent and wishlist buttons */}
         <View style={[styles.row]}>
-          <UIButton onPress={toggleWishlist} variant="solid" size="md" icon='heart' iconColor={isWishlisted ? colors.pink : colors.navy}>Wishlist</UIButton>
-          <UIButton onPress={() => setShowRent(v => !v)} variant="gold" size="md" icon="cart-outline">Rent Now</UIButton>
+          <Button onPress={toggleWishlist} variant="solid" size="md" icon='heart' iconColor={isWishlisted ? colors.pink : colors.navy}>Wishlist</Button>
+          <Button onPress={() => setShowRent(v => !v)} variant="gold" size="md" icon="cart-outline">Rent Now</Button>
         </View>
 
         {showRent && (
@@ -242,7 +258,7 @@ export default function ItemDetailScreen() {
               </View>
             </View>
 
-            <UIButton onPress={addToBasket} variant="gold">Add to basket</UIButton>
+            <Button onPress={handleSendRequest} variant="gold">Send Request</Button>
           </View>
         )}
       </ScrollView>

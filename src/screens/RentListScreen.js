@@ -197,7 +197,7 @@ export default function RentListScreen() {
           )}
 
           <View style={styles.cardActionsOverlay}>
-            <TouchableOpacity style={[styles.iconButtonSolid]} onPress={() => navigation.navigate('RentSelect', { id: item.id })}>
+            <TouchableOpacity style={[styles.iconButtonSolid]} onPress={() => navigation.navigate('ItemDetail', { id: item.id, showRent: true })}>
               <Ionicons name="cart-outline" size={20} color={colors.navy} />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.iconButtonSolid]} onPress={() => toggleWishlist(item)}>
@@ -206,7 +206,7 @@ export default function RentListScreen() {
           </View>
         </View>
 
-        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('ItemDetail', { id: item.id })}>
+        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('ItemDetail', { id: item.id, showRent: false })}>
           <View style={styles.cardContent}>
             <Text numberOfLines={1} style={styles.cardTitle}>{item.title}</Text>
             {item.description && <Text numberOfLines={1} style={styles.cardDescription}>{item.description}</Text>}
