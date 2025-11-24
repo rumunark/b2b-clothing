@@ -2,7 +2,7 @@ import { View, Text, FlatList, Image, TouchableOpacity, Alert, ScrollView } from
 import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
+import { Button } from '../ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 import { useCallback, useEffect, useState } from 'react';
@@ -187,9 +187,9 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.brandTitle}>b2b clothing</Text>
               <Text style={styles.tagline}>Cheaper than buying • Cooler than resale • Greener than fast fashion</Text>
               <View style={{ height: 20 }} />
-              <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'Rent' })} style={{ width: '50%' }}>Enter the lineup →</UIButton>
+              <Button onPress={() => navigation.navigate('Tabs', { screen: 'Rent' })} style={{ width: '50%' }}>Enter the lineup →</Button>
               <View style={{ height: 12 }} />
-              <UIButton onPress={() => navigation.navigate('Tabs', { screen: 'List' })} style={{ width: '50%' }}>Drop your gear →</UIButton>
+              <Button onPress={() => navigation.navigate('Tabs', { screen: 'List' })} style={{ width: '50%' }}>Drop your gear →</Button>
               <View style={{ height: 24 }} />
               <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
             </View>

@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
+import { Button } from '../ui'
 import { useRoute } from '@react-navigation/native';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
@@ -180,8 +180,8 @@ export default function ItemDetailScreen() {
 
         {/* Rent and wishlist buttons */}
         <View style={[styles.row]}>
-          <UIButton onPress={toggleWishlist} variant="solid" size="md" icon='heart' iconColor={isWishlisted ? colors.pink : colors.navy}>Wishlist</UIButton>
-          <UIButton onPress={() => setShowRent(v => !v)} variant="gold" size="md" icon="cart-outline">Rent Now</UIButton>
+          <Button onPress={toggleWishlist} variant="solid" size="md" icon='heart' iconColor={isWishlisted ? colors.pink : colors.navy}>Wishlist</Button>
+          <Button onPress={() => setShowRent(v => !v)} variant="gold" size="md" icon="cart-outline">Rent Now</Button>
         </View>
 
         {showRent && (
@@ -242,7 +242,7 @@ export default function ItemDetailScreen() {
               </View>
             </View>
 
-            <UIButton onPress={addToBasket} variant="gold">Add to basket</UIButton>
+            <Button onPress={addToBasket} variant="gold">Add to basket</Button>
           </View>
         )}
       </ScrollView>

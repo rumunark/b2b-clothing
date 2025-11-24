@@ -8,7 +8,7 @@
 
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
-import UIButton from './Button';
+import Button from './Button';
 
 /**
  * Alert Component
@@ -20,7 +20,7 @@ import UIButton from './Button';
  * @param {string} buttonText - Text for the primary action button (default: "OK")
  * @param {object} style - Additional styles for the alert container
  */
-export default function UIAlert({ 
+export default function Alert({ 
   visible, 
   onClose, 
   title, 

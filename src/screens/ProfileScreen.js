@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
 import { supabase } from '../lib/supabaseClient';
-import UIButton from '../ui/Button';
+import { Button } from '../ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 
@@ -66,8 +66,8 @@ export default function ProfileScreen({ navigation }) {
         {verified ? <Text style={styles.body}>Verified: Yes</Text> : <Text style={styles.body}>Verified: No</Text>}
         <Text style={styles.body}>Items listed: {numListed}</Text>
         <Text style={styles.body}>Items rented: {numRented}</Text>
-        <UIButton onPress={() => navigation.navigate('EditProfile')}>Edit profile</UIButton>
-        <UIButton onPress={() => supabase.auth.signOut()}>Sign Out</UIButton>
+        <Button onPress={() => navigation.navigate('EditProfile')}>Edit profile</Button>
+        <Button onPress={() => supabase.auth.signOut()}>Sign Out</Button>
       </View>
     </Background>
   );

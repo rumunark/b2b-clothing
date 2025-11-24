@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, Alert, TouchableOpacity } from 'react-native';
 import Background from '../components/Background';
-import UIButton from '../ui/Button';
+import { Button } from '../ui'
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
@@ -135,7 +135,7 @@ export default function BasketScreen() {
           }
         />
         {rows.length > 0 && (
-          <UIButton onPress={handleSendRequest} variant="gold">Send request for all</UIButton>
+          <Button onPress={handleSendRequest} variant="gold">Send request for all</Button>
         )}
       </View>
     </Background>
