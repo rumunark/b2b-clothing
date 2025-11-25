@@ -13,16 +13,17 @@ import { styles } from '../theme/styles';
 
 export default function ItemDetailScreen() {
   const route = useRoute();
-  const { id } = route.params ?? {};
+  const { id, startDate: startDateParam, endDate: endDateParam } = route.params ?? {};
   const [item, setItem] = useState(null);
   const [ratingAvg, setRatingAvg] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   // rent picker state
+  const [basketItem, getBasketItem] = useState(route.params.basketItem ?? {});
   const [showRent, setShowRent] = useState(route.params.showRent);
   const [startDate, setStartDate] = useState(dayjs().format('YYYY-MM-DD'));
-  const [endDate, setEndDate] = useState(dayjs().add(3, 'day').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [imgIndex, setImgIndex] = useState(0);
   const [carouselWidth, setCarouselWidth] = useState(0);
   const insets = useSafeAreaInsets();
@@ -30,18 +31,26 @@ export default function ItemDetailScreen() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: it } = await supabase
+      const { data: item } = await supabase
         .from('items')
         .select('id, title, description, image_url, images, price_per_day, size, owner_id, cleaning_price')
         .eq('id', id)
         .maybeSingle();
-      setItem(it ?? null);
+      setItem(item ?? null);
 
-      if (it?.owner_id) {
+      const { data: basketItem } = await supabase
+        .from('basket')
+        .select('id, item_id, start_date, end_date, nights, total_price')
+        .eq('user_id', user.id)
+        .eq('item_id', item.id)
+        .maybeSingle();
+      getBasketItem(basketItem ?? null);
+
+      if (item?.owner_id) {
         const { data: revs } = await supabase
           .from('reviews')
           .select('rating')
-          .eq('reviewee_id', it.owner_id);
+          .eq('reviewee_id', item.owner_id);
         const count = revs?.length ?? 0;
         const avg = count ? revs.reduce((s, r) => s + (Number(r.rating) || 0), 0) / count : 0;
         setRatingAvg(avg);
@@ -49,12 +58,12 @@ export default function ItemDetailScreen() {
       }
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (user && it?.id) {
+      if (user && item?.id) {
         const { data: wishlistEntry } = await supabase
           .from('wishlist')
           .select('id')
           .eq('user_id', user.id)
-          .eq('listing_id', it.id)
+          .eq('listing_id', item.id)
           .maybeSingle();
         setIsWishlisted(!!wishlistEntry);
       }
@@ -142,6 +151,30 @@ export default function ItemDetailScreen() {
       }
     }
   };
+
+
+  const saveToBasket = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Not signed in', 'Please sign in first.');
+        return;
+      }
+      from('basket')
+        .update({
+          item_id: item.id,
+          start_date: startDate,
+          end_date: endDate,
+          nights: nights,
+          total_price: totalPrice.toFixed(2),
+        })
+        .eq('user_id', user.id)
+        .eq('item_id', item.id);
+
+    } catch (e) {
+      Alert.alert('Send error', e.message || String(e));
+    }
+  } 
 
   const handleSendRequest = async () => {
     try {
@@ -289,6 +322,7 @@ export default function ItemDetailScreen() {
 
             <View style={{ height: 16 }} />
 
+            <Button onPress={saveToBasket} variant="gold">Save to basket</Button>
             <Button onPress={handleSendRequest} variant="gold">Send Request</Button>
           </View>
         )}
