@@ -16,12 +16,12 @@ import { styles } from '../theme/styles';
 import { generateAndStoreKeys, getPublicKey } from '../lib/encryption';
 
 /**
- * LoginScreen Component
+ * Login Component
  * 
  * Handles user authentication with email/password validation,
  * error handling, and loading states during sign-in process.
  */
-export default function LoginScreen() {
+export default function Login() {
   // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

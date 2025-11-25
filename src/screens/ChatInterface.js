@@ -106,7 +106,7 @@ const chatStyles = StyleSheet.create({
   },
 });
 
-export default function ChatScreen({ route, navigation }) {
+export default function ChatInterface({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const { chatId, otherUserId, otherUserName, item } = route.params;
   

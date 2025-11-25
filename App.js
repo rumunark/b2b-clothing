@@ -17,18 +17,18 @@ import { supabase } from './src/lib/supabaseClient';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Screen imports for different app sections
-import LoginScreen from './src/screens/LoginScreen';
-import OnboardingScreen from './src/screens/OnboardingScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import ChatScreen from './src/screens/ChatScreen';
-import RentApprovalScreen from './src/screens/RentApprovalScreen';
-import WelcomeScreen from './src/screens/WelcomeScreen';
-import SignupScreen from './src/screens/SignupScreen';
+import Login from './src/screens/Login';
+import Onboarding from './src/screens/Onboarding';
+import Home from './src/screens/Home';
+import ChatInterface from './src/screens/ChatInterface';
+import ApproveRental from './src/screens/ApproveRental';
+import Landing from './src/screens/Landing';
+import Signup from './src/screens/Signup';
 import AppTabs from './src/navigation/AppTabs';
-import ItemDetailScreen from './src/screens/ItemDetailScreen';
-import BasketScreen from './src/screens/BasketScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
-import RentListScreen from './src/screens/RentListScreen';
+import ItemDetails from './src/screens/ItemDetails';
+import Basket from './src/screens/Basket';
+import Settings from './src/screens/Settings';
+import Explore from './src/screens/Explore';
 import HeaderBar from './src/components/HeaderBar';
 
 // Notification function imports
@@ -49,9 +49,9 @@ const AppStack = createNativeStackNavigator();
 function AuthStackNavigator() {
   return (
     <AuthStack.Navigator initialRouteName="Welcome">
-      <AuthStack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
-      <AuthStack.Screen name="Login" component={LoginScreen} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
-      <AuthStack.Screen name="Signup" component={SignupScreen} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
+      <AuthStack.Screen name="Welcome" component={Landing} options={{ headerShown: false }} />
+      <AuthStack.Screen name="Login" component={Login} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
+      <AuthStack.Screen name="Signup" component={Signup} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
     </AuthStack.Navigator>
   );
 }
@@ -64,7 +64,7 @@ function AuthStackNavigator() {
 function OnboardingStackNavigator() {
   return (
     <OnboardingStack.Navigator>
-      <OnboardingStack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Complete Onboarding" showBack={false} showIcons={false} /> }} />
+      <OnboardingStack.Screen name="Onboarding" component={Onboarding} options={{ headerShown: true, header: () => <HeaderBar title="Complete Onboarding" showBack={false} showIcons={false} /> }} />
     </OnboardingStack.Navigator>
   );
 }
@@ -78,12 +78,12 @@ function AppStackNavigator() {
   return (
     <AppStack.Navigator initialRouteName="Tabs">
       <AppStack.Screen name="Tabs" component={AppTabs} options={{headerShown: false,}}/>
-      <AppStack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
-      <AppStack.Screen name="Approval" component={RentApprovalScreen} options={{ headerShown: true, header: () => <HeaderBar title="Approve" showBack={true} showIcons={false} /> }}/>
-      <AppStack.Screen name="ItemDetail" component={ItemDetailScreen} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title="Details" showBack={true} showIcons={false} /> })}/>
-      <AppStack.Screen name="EditProfile" component={OnboardingScreen} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
-      <AppStack.Screen name="Basket" component={BasketScreen} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
-      <AppStack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="Chat" component={ChatInterface} options={{ headerShown: false }} />
+      <AppStack.Screen name="Approval" component={ApproveRental} options={{ headerShown: true, header: () => <HeaderBar title="Approve" showBack={true} showIcons={false} /> }}/>
+      <AppStack.Screen name="ItemDetail" component={ItemDetails} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title="Details" showBack={true} showIcons={false} /> })}/>
+      <AppStack.Screen name="EditProfile" component={Onboarding} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="Basket" component={Basket} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="Settings" component={Settings} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
     </AppStack.Navigator>
   );
 }

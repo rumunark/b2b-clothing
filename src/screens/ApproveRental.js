@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 import { encryptMessage, getPrivateKey, getPublicKey } from '../lib/encryption';
 
-export default function RentApprovalScreen() {
+export default function ApproveRental() {
   const route = useRoute();
   const navigation = useNavigation();
   const { requestId, buyerId, buyerName, item, startDate, endDate, nights, totalPrice, netAmount } = route.params;

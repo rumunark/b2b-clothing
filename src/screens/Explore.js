@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 import Fuse from 'fuse.js';
 
-export default function RentListScreen() {
+export default function Explore() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const inputRef = useRef(null);

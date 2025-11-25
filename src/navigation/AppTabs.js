@@ -2,7 +2,7 @@
  * Main App Tab Navigation
  * 
  * Defines the bottom tab navigation for the main application flow.
- * Includes five main sections: Home, Rent, List, Wishlist, and Profile.
+ * Includes five main sections: Home, Explore, List, Wishlist, and Profile.
  * Uses Ionicons for tab icons with focused/unfocused states.
  */
 
@@ -12,11 +12,11 @@ import { colors } from '../theme/colors';
 import HeaderBar from '../components/HeaderBar';
 
 // Screen imports for each tab
-import LandingScreen from '../screens/HomeScreen';
-import RentListScreen from '../screens/RentListScreen';
-import ListScreen from '../screens/ListScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import WishlistScreen from '../screens/WishlistScreen';
+import Home from '../screens/Home';
+import Explore from '../screens/Explore';
+import CreateListing from '../screens/CreateListing';
+import Profile from '../screens/Profile';
+import Wishlist from '../screens/Wishlist';
 
 // Create the bottom tab navigator
 const Tab = createBottomTabNavigator();
@@ -25,7 +25,7 @@ const Tab = createBottomTabNavigator();
  * AppTabs Component
  * Creates the main tab navigation with 5 tabs:
  * - Home: Browse available items
- * - Rent: View rental listings
+ * - Explore: View rental listings
  * - List: Create new item listings
  * - Wishlist: Saved/favorited items
  * - Profile: User profile and settings
@@ -48,7 +48,7 @@ export default function AppTabs() {
           
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Rent') {
+          } else if (route.name === 'Explore') {
             iconName = focused ? 'repeat' : 'repeat-outline';
           } else if (route.name === 'List') {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
@@ -63,11 +63,11 @@ export default function AppTabs() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={LandingScreen} options={{ title: 'Home' }} />
-      <Tab.Screen name="Rent" component={RentListScreen} options={{ title: 'Rent' }} />
-      <Tab.Screen name="List" component={ListScreen} options={{ title: 'List an item' }} />
-      <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ title: 'Wishlist' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <Tab.Screen name="Home" component={Home} options={{ title: 'Home' }} />
+      <Tab.Screen name="Explore" component={Explore} options={{ title: 'Explore' }} />
+      <Tab.Screen name="List" component={CreateListing} options={{ title: 'List an item' }} />
+      <Tab.Screen name="Wishlist" component={Wishlist} options={{ title: 'Wishlist' }} />
+      <Tab.Screen name="Profile" component={Profile} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );
 }

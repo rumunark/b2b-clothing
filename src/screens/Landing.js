@@ -6,7 +6,7 @@ import Background from '../components/Background';
 import { Button } from '../ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function WelcomeScreen() {
+export default function Landing() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   return (

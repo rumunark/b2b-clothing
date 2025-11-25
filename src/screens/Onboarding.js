@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 
-export default function OnboardingScreen() {
+export default function Onboarding() {
   const [fullName, setFullName] = useState('');
   const [city, setCity] = useState('');
   const [dob, setDob] = useState('');

@@ -8,7 +8,7 @@ import { styles } from '../theme/styles';
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function HomeScreen({ navigation }) {
+export default function Home({ navigation }) {
   const insets = useSafeAreaInsets();
   const [requests, setRequests] = useState([]);
   const [activeChats, setActiveChats] = useState([]);

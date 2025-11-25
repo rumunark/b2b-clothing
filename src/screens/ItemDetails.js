@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 
-export default function ItemDetailScreen() {
+export default function ItemDetails() {
   const route = useRoute();
   const { id, startDate: startDateParam, endDate: endDateParam } = route.params ?? {};
   const [item, setItem] = useState(null);

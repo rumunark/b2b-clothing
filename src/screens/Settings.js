@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 
-export default function SettingsScreen() {
+export default function Settings() {
   const insets = useSafeAreaInsets();
   return (
     <Background>

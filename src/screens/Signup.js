@@ -18,12 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 /**
- * SignupScreen Component
+ * Signup Component
  * 
  * Handles user registration with form validation and error handling.
  * Creates user authentication record and profile information in Supabase.
  */
-export default function SignupScreen() {
+export default function Signup() {
   // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

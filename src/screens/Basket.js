@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 
-export default function BasketScreen() {
+export default function Basket() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
