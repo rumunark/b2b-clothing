@@ -22,8 +22,7 @@ export default function ItemDetailScreen() {
   // rent picker state
   const [showRent, setShowRent] = useState(route.params.showRent);
   const [startDate, setStartDate] = useState(dayjs().format('YYYY-MM-DD'));
-  const [nights, setNights] = useState(3);
-  const [customNights, setCustomNights] = useState('');
+  const [endDate, setEndDate] = useState(dayjs().add(3, 'day').format('YYYY-MM-DD'));
   const [imgIndex, setImgIndex] = useState(0);
   const [carouselWidth, setCarouselWidth] = useState(0);
   const insets = useSafeAreaInsets();
@@ -63,13 +62,62 @@ export default function ItemDetailScreen() {
     if (id) load();
   }, [id]);
 
+  const nights = useMemo(() => {
+    if (startDate && endDate) {
+      const diff = dayjs(endDate).diff(dayjs(startDate), 'day');
+      return diff > 0 ? diff : 0;
+    }
+    return 0;
+  }, [startDate, endDate]);
+
   const pricePerDay = Number(item?.price_per_day || 0);
   const cleaningFee = Number(item?.cleaning_price || 0);
-  const effectiveNights = Number(customNights || nights || 1);
+  
   const estimatedTotal = useMemo(() => {
-    const total = pricePerDay * effectiveNights + cleaningFee;
+    if (nights < 1) return (0).toFixed(2);
+    const total = pricePerDay * nights + cleaningFee;
     return total.toFixed(2);
-  }, [pricePerDay, effectiveNights, cleaningFee]);
+  }, [pricePerDay, nights, cleaningFee]);
+
+  // Generate Marked Dates for Range Visualization
+  const markedDates = useMemo(() => {
+    let marks = {};
+    
+    if (startDate) {
+      marks[startDate] = { startingDay: true, color: colors.navy, textColor: colors.white };
+      if (!endDate) {
+        marks[startDate] = { selected: true, color: colors.navy, textColor: colors.white };
+      }
+    }
+
+    if (startDate && endDate) {
+      let curr = dayjs(startDate).add(1, 'day');
+      const end = dayjs(endDate);
+      
+      while (curr.isBefore(end)) {
+        const dateStr = curr.format('YYYY-MM-DD');
+        marks[dateStr] = { color: colors.navy, textColor: colors.white, opacity: 0.2 };
+        curr = curr.add(1, 'day');
+      }
+      
+      marks[endDate] = { endingDay: true, color: colors.navy, textColor: colors.white };
+    }
+    
+    return marks;
+  }, [startDate, endDate]);
+
+  const onDayPress = (day) => {
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(day.dateString);
+      setEndDate(null);
+    } else if (startDate && !endDate) {
+      if (dayjs(day.dateString).isBefore(dayjs(startDate))) {
+        setStartDate(day.dateString);
+      } else {
+        setEndDate(day.dateString);
+      }
+    }
+  };
 
   const toggleWishlist = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -109,8 +157,7 @@ export default function ItemDetailScreen() {
         return;
       }
 
-      const effectiveNights = Number(customNights || nights || 1);
-      const totalPrice = (Number(item.price_per_day || 0) * effectiveNights + Number(item.cleaning_price || 0));
+      const totalPrice = (Number(item.price_per_day || 0) * nights + Number(item.cleaning_price || 0));
 
       const { error } = await supabase
         .from('requests')
@@ -119,7 +166,8 @@ export default function ItemDetailScreen() {
           seller_id: item.owner_id,
           item_id: item.id,
           start_date: startDate,
-          nights: effectiveNights,
+          end_date: endDate,
+          nights: nights,
           total_price: totalPrice.toFixed(2),
           status: 'pending'
         }]);
@@ -195,70 +243,52 @@ export default function ItemDetailScreen() {
         </View>
 
         {/* Rent and wishlist buttons */}
-        <View style={[styles.row]}>
-          <Button onPress={toggleWishlist} variant="solid" size="md" icon='heart' iconColor={isWishlisted ? colors.pink : colors.navy}>Wishlist</Button>
-          <Button onPress={() => setShowRent(v => !v)} variant="gold" size="md" icon="cart-outline">Rent Now</Button>
+        <View style={styles.row}>
+          <Button onPress={toggleWishlist} variant="solid" size="md" icon='heart' iconColor={isWishlisted ? colors.pink : colors.navy} style={{ flex: 1 }}>Wishlist</Button>
+          <Button onPress={() => setShowRent(v => !v)} variant="gold" size="md" icon={showRent ? "cart" : "cart-outline"} iconColor={colors.navy} style={{ flex: 1 }}>Rent Now</Button>
         </View>
 
         {showRent && (
           <View>
             <Text style={styles.label}>Start date</Text>
             <Calendar
-              onDayPress={(d) => setStartDate(d.dateString)}
-              markedDates={{ [startDate]: { selected: true, selectedColor: colors.navy } }}
-              theme={{ calendarBackground: colors.white, selectedDayTextColor: colors.white, todayTextColor: colors.yellow, dayTextColor: colors.navy, textDisabledColor: colors.gray200, arrowColor: colors.navy, monthTextColor: colors.navy, textSectionTitleColor: colors.gray500 }}
-              style={{ borderRadius: 8 }}
+              onDayPress={onDayPress}
+              markingType={'period'}
+              markedDates={markedDates}
+              minDate={dayjs().format('YYYY-MM-DD')}
+              theme={{ 
+                calendarBackground: colors.white, 
+                selectedDayTextColor: colors.white, 
+                todayTextColor: colors.yellow, 
+                dayTextColor: colors.navy, 
+                textDisabledColor: colors.gray200, 
+                arrowColor: colors.navy, 
+                monthTextColor: colors.navy, 
+                textSectionTitleColor: colors.gray500 
+              }}
+              
             />
-            
-            <Text style={styles.label}>Duration</Text>
-            <View style={[styles.row, { flexWrap: 'wrap' }]}>
-              {[{k:1,t:'1 night'},{k:3,t:'3 nights'},{k:7,t:'1 week'}].map(opt => (
-                <TouchableOpacity
-                  key={opt.k}
-                  style={[styles.chip, nights === opt.k && styles.chipActive]}
-                  onPress={() => { setNights(opt.k); setCustomNights(''); }}
-                >
-                  <Text style={[styles.chipText, nights === opt.k && styles.chipTextActive]}>{opt.t}</Text>
-                </TouchableOpacity>
-              ))}
-              <TouchableOpacity
-                style={[styles.chip, !nights && styles.chipActive]}
-                onPress={() => setNights(null)}
-              >
-                <Text style={[styles.chipText, !nights && styles.chipTextActive]}>Other</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {!nights && (
-              <>
-                <Text style={styles.label}>Custom nights</Text>
-                <TextInput
-                  value={customNights}
-                  onChangeText={setCustomNights}
-                  keyboardType="numeric"
-                  placeholder="e.g. 10"
-                  placeholderTextColor={colors.gray500}
-                  style={styles.input}
-                />
-              </>
-            )}
 
-            <View>
-              <View style={[styles.row, { justifyContent: 'space-between' }]}>
-                <Text style={styles.body}>Price per night</Text>
-                <Text style={styles.body}>£{pricePerDay.toFixed(2)}</Text>
+            <View style={{ height: 12 }} />
+              <View style={styles.row}>
+                  <Text style={styles.body}>Duration:</Text>
+                  <Text style={styles.value}>{nights} night{nights > 1 ? 's' : ''}</Text>
               </View>
-              <View style={[styles.row, { justifyContent: 'space-between' }]}>
-                <Text style={styles.body}>Cleaning fee</Text>
-                <Text style={styles.body}>£{cleaningFee.toFixed(2)}</Text>
+              <View style={styles.row}>
+                <Text style={styles.body}>Price per day:</Text>
+                <Text style={styles.value}>£{pricePerDay.toFixed(2)}</Text>
               </View>
-              <View style={[styles.row, { justifyContent: 'space-between' }]}>
-                <Text style={styles.label}>Estimated total</Text>
+              <View style={styles.row}>
+                <Text style={styles.body}>Cleaning fee:</Text>
+                <Text style={styles.value}>£{cleaningFee.toFixed(2)}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.body}>Estimated total:</Text>
                 <Text style={styles.price}>£{estimatedTotal}</Text>
               </View>
-            </View>
 
-            <Button onPress={addToBasket} variant="gold">Add to basket</Button>
+            <View style={{ height: 16 }} />
+
             <Button onPress={handleSendRequest} variant="gold">Send Request</Button>
           </View>
         )}

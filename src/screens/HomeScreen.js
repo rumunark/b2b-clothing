@@ -26,6 +26,7 @@ export default function HomeScreen({ navigation }) {
           id,
           buyer_id,
           start_date,
+          end_date,
           nights,
           total_price,
           status,
@@ -116,6 +117,7 @@ export default function HomeScreen({ navigation }) {
           buyerName: buyerName,
           item: item.items,
           startDate: item.start_date,
+          endDate: item.end_date,
           nights: item.nights,
           totalPrice: item.total_price,
           netAmount: netAmount

@@ -12,12 +12,9 @@ import { encryptMessage, getPrivateKey, getPublicKey } from '../lib/encryption';
 export default function RentApprovalScreen() {
   const route = useRoute();
   const navigation = useNavigation();
-  const { requestId, buyerId, buyerName, item, startDate, nights, totalPrice, netAmount } = route.params;
+  const { requestId, buyerId, buyerName, item, startDate, endDate, nights, totalPrice, netAmount } = route.params;
   const insets = useSafeAreaInsets();
   const [processing, setProcessing] = useState(false);
-
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + nights);
 
   const handleApprove = async () => {
     setProcessing(true);
@@ -118,7 +115,7 @@ export default function RentApprovalScreen() {
         {/* TODO: Fix date formatting>*/}
         <Label>Dates</Label>
         <Text style={styles.body}>Start: {startDate}</Text>
-        <Text style={styles.body}>End: {endDate.toDateString()}</Text>
+        <Text style={styles.body}>End: {endDate}</Text>
         <Text style={styles.body}>Nights: {nights}</Text>
 
         <View style={{ height: 16 }} />
