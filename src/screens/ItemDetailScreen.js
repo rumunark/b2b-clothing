@@ -20,54 +20,68 @@ export default function ItemDetailScreen() {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   // rent picker state
-  const [basketItem, getBasketItem] = useState(route.params.basketItem ?? {});
-  const [showRent, setShowRent] = useState(route.params.showRent);
-  const [startDate, setStartDate] = useState(dayjs().format('YYYY-MM-DD'));
-  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
+  const [basketItem, setBasketItem] = useState(null);
+  const [showRent, setShowRent] = useState(route.params?.showRent || false);
+  
+  // Default to today, or params, will be overridden by basket data if found
+  const [startDate, setStartDate] = useState(startDateParam || dayjs().format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(endDateParam || dayjs().format('YYYY-MM-DD'));
+
   const [imgIndex, setImgIndex] = useState(0);
   const [carouselWidth, setCarouselWidth] = useState(0);
   const insets = useSafeAreaInsets();
   const [sending, setSending] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     const load = async () => {
-      const { data: item } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Load all item details
+      const { data: itemData } = await supabase
         .from('items')
         .select('id, title, description, image_url, images, price_per_day, size, owner_id, cleaning_price')
         .eq('id', id)
         .maybeSingle();
-      setItem(item ?? null);
+      setItem(itemData ?? null);
 
-      const { data: basketItem } = await supabase
-        .from('basket')
-        .select('id, item_id, start_date, end_date, nights, total_price')
-        .eq('user_id', user.id)
-        .eq('item_id', item.id)
-        .maybeSingle();
-      getBasketItem(basketItem ?? null);
+      if (user && itemData?.id) {
+        // Load Basket Data
+        const { data: existingBasketItem } = await supabase
+          .from('basket')
+          .select('id, item_id, start_date, end_date, nights, total')
+          .eq('user_id', user.id)
+          .eq('item_id', itemData.id)
+          .maybeSingle();
+        
+        // Use these pre-existing values
+        if (existingBasketItem) {
+          setBasketItem(existingBasketItem);
+          setStartDate(existingBasketItem.start_date);
+          setEndDate(existingBasketItem.end_date);
+          setShowRent(true); // Open the rent view if they already have it in basket
+        }
 
-      if (item?.owner_id) {
+        const { data: wishlistEntry } = await supabase
+          .from('wishlist')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('listing_id', itemData.id)
+          .maybeSingle();
+        setIsWishlisted(!!wishlistEntry);
+      }
+
+      if (itemData?.owner_id) {
         const { data: revs } = await supabase
           .from('reviews')
           .select('rating')
-          .eq('reviewee_id', item.owner_id);
+          .eq('reviewee_id', itemData.owner_id);
         const count = revs?.length ?? 0;
         const avg = count ? revs.reduce((s, r) => s + (Number(r.rating) || 0), 0) / count : 0;
         setRatingAvg(avg);
         setRatingCount(count);
       }
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user && item?.id) {
-        const { data: wishlistEntry } = await supabase
-          .from('wishlist')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('listing_id', item.id)
-          .maybeSingle();
-        setIsWishlisted(!!wishlistEntry);
-      }
     };
+
     if (id) load();
   }, [id]);
 
@@ -156,21 +170,50 @@ export default function ItemDetailScreen() {
   const saveToBasket = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      const totalPrice = (Number(item.price_per_day || 0) * nights + Number(item.cleaning_price || 0));
       if (!user) {
-        Alert.alert('Not signed in', 'Please sign in first.');
+        Alert.alert("Please sign in", "You must be signed in to add items to your basket.");
         return;
       }
-      from('basket')
-        .update({
-          item_id: item.id,
-          start_date: startDate,
-          end_date: endDate,
-          nights: nights,
-          total_price: totalPrice.toFixed(2),
-        })
-        .eq('user_id', user.id)
-        .eq('item_id', item.id);
+      
+      if (!startDate || !endDate || nights < 1) {
+        Alert.alert("Invalid dates", "Please select a valid date range.");
+        return;
+      }
 
+      if (basketItem && basketItem.id) {
+        const { error, data } = await supabase
+          .from('basket')
+          .update({
+            start_date: startDate,
+            end_date: endDate,
+            nights: nights,
+            total: totalPrice,
+          })
+          .eq('id', basketItem.id)
+          .select()
+          .single();
+          setBasketItem(data);
+        if (error) {throw error};
+      } else {
+        const { error, data } = await supabase
+          .from('basket')
+          .insert({
+            user_id: user.id,
+            item_id: item.id,
+            start_date: startDate,
+            end_date: endDate,
+            nights: nights,
+            total: totalPrice,
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+          setBasketItem(data);
+        if (error) {throw error};
+      }
+    
+      Alert.alert('Saved to basket', `Start: ${startDate}\nEnd: ${endDate}\nNights: ${nights}\nTotal: ${totalPrice.toFixed(2)}`);
     } catch (e) {
       Alert.alert('Send error', e.message || String(e));
     }
@@ -322,8 +365,10 @@ export default function ItemDetailScreen() {
 
             <View style={{ height: 16 }} />
 
-            <Button onPress={saveToBasket} variant="gold">Save to basket</Button>
+            <Button onPress={saveToBasket} variant="solid">Save to basket</Button>
+            <View style={{ height: 12 }} />
             <Button onPress={handleSendRequest} variant="gold">Send Request</Button>
+            <View style={{ height: 12 }} />
           </View>
         )}
       </ScrollView>

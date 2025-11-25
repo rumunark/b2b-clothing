@@ -23,7 +23,7 @@ export default function BasketScreen() {
       // Try with join to items if a FK exists
       let { data, error } = await supabase
         .from('basket')
-        .select(`id, item_id, start_date, nights, price_per_day, cleaning_price, total, created_at,
+        .select(`id, item_id, start_date, nights, total, created_at,
           items: item_id ( id, title, image_url, owner_id )
         `)
         .eq('user_id', user.id)
@@ -32,7 +32,7 @@ export default function BasketScreen() {
         // fallback: fetch basket then items by id
         const fb = await supabase
           .from('basket')
-          .select('id, item_id, start_date, nights, price_per_day, cleaning_price, total, created_at')
+          .select('id, item_id, start_date, nights, total, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         if (fb.error) throw fb.error;
@@ -66,9 +66,10 @@ export default function BasketScreen() {
   };
 
   const handleEdit = (row) => {
-    navigation.navigate('RentSelect', {
+    navigation.navigate('ItemDetail', {
       id: row.item_id,
       startDate: row.start_date,
+      endDate: row.end_date,
       nights: row.nights,
     });
   };
@@ -88,9 +89,6 @@ export default function BasketScreen() {
           return;
         }
 
-        const effectiveNights = Number(customNights || nights || 1);
-        const totalPrice = (Number(item.price_per_day || 0) * effectiveNights + Number(item.cleaning_price || 0));
-
         const { error } = await supabase
           .from('requests')
           .insert([{
@@ -98,8 +96,8 @@ export default function BasketScreen() {
             seller_id: item.owner_id,
             item_id: item.id,
             start_date: startDate,
-            nights: effectiveNights,
-            total_price: totalPrice.toFixed(2),
+            nights: nights,
+            total: total,
             status: 'pending'
           }]);
 
