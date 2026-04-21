@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabaseClient';
 import { Button } from '../ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
+import { Ionicons } from '@expo/vector-icons';
+
 
 export default function ProfileScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -17,6 +19,7 @@ export default function ProfileScreen({ navigation }) {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [numListed, setNumListed] = useState(0);
   const [numRented, setNumRented] = useState(0);
+  const [items, setItems] = useState([]);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -25,7 +28,11 @@ export default function ProfileScreen({ navigation }) {
       setEmail(user?.email ?? '');
       setUserId(user?.id ?? '');
       if (!user) return;
-      const { data: profile } = await supabase.from('profiles').select('full_name, city, birthday, avatar_url, is_verified').eq('id', user.id).maybeSingle();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, city, birthday, avatar_url, is_verified')
+        .eq('id', user.id)
+        .maybeSingle();
       setFullName(profile?.full_name ?? '');
       const rawDob = profile?.birthday ?? '';
       if (rawDob) {
@@ -46,9 +53,16 @@ export default function ProfileScreen({ navigation }) {
         if (m < 0 || (m === 0 && today.getDate() < d.getDate())) years--;
         setAge(years);
       }
-      const { count: listedCount } = await supabase.from('items').select('id', { count: 'exact', head: true }).eq('owner_id', user.id);
+      const { data: myItems, count: listedCount } = await supabase
+        .from('items')
+        .select('id, title, description, image_url, images, price_per_day, size, owner_id, cleaning_price')
+        .eq('owner_id', user.id);
       setNumListed(listedCount ?? 0);
-      const { count: rentedCount } = await supabase.from('rentals').select('id', { count: 'exact', head: true }).eq('renter_id', user.id);
+      setItems(myItems || []);
+      const { count: rentedCount } = await supabase
+        .from('rentals')
+        .select('id', { count: 'exact', head: true })
+        .eq('renter_id', user.id);
       setNumRented(rentedCount ?? 0);
     };
     load();
@@ -56,10 +70,12 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <Background>
-      <View style={[styles.containerBackground, styles.centered]}>
+      <View style={[styles.container, styles.centered]}>
         {/* <Text style={profileScreenStyles.title}>Profile</Text> */}
-        {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : null}
-        <Text style={styles.body}>Full name: {fullName}</Text>
+        <View style={styles.column}>
+          {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : <Ionicons name='person-circle-outline' size={96} color={colors.white}/>}
+          <Text style={styles.label}>{fullName}</Text>
+        </View>
         <Text style={styles.body}>Email: {email}</Text>
         {dob ? <Text style={styles.body}>DOB: {dob}</Text> : null}
         {age != null ? <Text style={styles.body}>Age: {age}</Text> : null}
@@ -67,6 +83,12 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.body}>Items listed: {numListed}</Text>
         <Text style={styles.body}>Items rented: {numRented}</Text>
         <Button onPress={() => navigation.navigate('EditProfile')}>Edit profile</Button>
+        {items.map(item => (
+          <View key={item.id}>
+            <Text style={styles.body}>{item.title}</Text>
+            <Text style={styles.body}>£{item.price_per_day}/day • Cleaning £{item.cleaning_price}</Text>
+          </View>
+        ))}
         <Button onPress={() => supabase.auth.signOut()}>Sign Out</Button>
       </View>
     </Background>

@@ -25,6 +25,7 @@ export const styles = StyleSheet.create({
   containerBackground: { flexGrow: 1, padding: 16, backgroundColor: colors.navy, gap: 8 },
   centered: { flex: 1, padding: 16, alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  column: {flexDirection: 'row', justifyContent: 'column'},
 
   /**
    * =============================================
@@ -90,6 +91,7 @@ export const styles = StyleSheet.create({
   avatar: { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: colors.white },
   thumbnail: { width: 72, height: 72, borderRadius: 8 },
   carouselImage: { width: '100%', aspectRatio: 1, borderRadius: 8, backgroundColor: colors.lightBackground },
+  defaultAvatar: {size: 1024, color: colors.white },
 
   /**
    * CHIPS & DOTS
