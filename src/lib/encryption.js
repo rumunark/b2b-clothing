@@ -4,20 +4,35 @@ import { supabase } from './supabaseClient';
 import { fromUint8Array, toUint8Array, encode, decode } from 'js-base64'; 
 
 const uint8ArrayToBase64 = (array) => {
-  return fromUint8Array(array);
+  // Convert Uint8Array to binary string, then encode to Base64
+  const binaryString = Array.from(array, byte => String.fromCharCode(byte)).join('');
+  return encode(binaryString);
 };
 
 const base64ToUint8Array = (base64String) => {
-  return toUint8Array(base64String);
+  // Decode Base64 to binary string, then convert to Uint8Array
+  const binaryString = decode(base64String);
+  const length = binaryString.length;
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 };
 
 // String conversion helpers (for message content)
 const stringToUint8Array = (str) => {
-  return toUint8Array(encode(str));
+  const encoded = unescape(encodeURIComponent(str));
+  const arr = new Uint8Array(encoded.length);
+  for (let i = 0; i < encoded.length; i++) {
+    arr[i] = encoded.charCodeAt(i);
+  }
+  return arr;
 };
 
 const uint8ArrayToString = (arr) => {
-  return decode(fromUint8Array(arr));
+  const decoded = String.fromCharCode.apply(null, arr);
+  return decodeURIComponent(escape(decoded));
 };
 
 export async function generateAndStoreKeys(userId) {
