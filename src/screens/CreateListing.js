@@ -9,7 +9,7 @@ import Background from '../components/Background';
 import { Input, Label, Button } from '../ui'
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabaseClient';
-import { createConnectAccount, createOnboardingLink } from '../lib/stripeEdge';
+//import { createConnectAccount, createOnboardingLink } from '../lib/stripeEdge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
 

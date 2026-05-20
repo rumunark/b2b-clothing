@@ -1,41 +1,30 @@
 import * as SecureStore from 'expo-secure-store';
 import nacl from 'tweetnacl';
 import { supabase } from './supabaseClient';
-import { encode, decode } from 'js-base64'; 
+import { fromUint8Array, toUint8Array, encode, decode } from 'js-base64'; 
 
 const uint8ArrayToBase64 = (array) => {
-  // Convert Uint8Array to binary string, then encode to Base64
-  const binaryString = Array.from(array, byte => String.fromCharCode(byte)).join('');
-  return encode(binaryString);
+  return fromUint8Array(array);
 };
 
 const base64ToUint8Array = (base64String) => {
-  // Decode Base64 to binary string, then convert to Uint8Array
-  const binaryString = decode(base64String);
-  const length = binaryString.length;
-  const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
+  return toUint8Array(base64String);
 };
 
 // String conversion helpers (for message content)
 const stringToUint8Array = (str) => {
-  const encoded = unescape(encodeURIComponent(str));
-  const arr = new Uint8Array(encoded.length);
-  for (let i = 0; i < encoded.length; i++) {
-    arr[i] = encoded.charCodeAt(i);
-  }
-  return arr;
+  return toUint8Array(encode(str));
 };
 
 const uint8ArrayToString = (arr) => {
-  const decoded = String.fromCharCode.apply(null, arr);
-  return decodeURIComponent(escape(decoded));
+  return decode(fromUint8Array(arr));
 };
 
 export async function generateAndStoreKeys(userId) {
+  if (typeof userId !== 'string' || userId.trim() === '') {
+    console.error('generateAndStoreKeys: Invalid userId provided. Must be a non-empty string.');
+    throw new Error('Invalid User ID: A non-empty string is required to generate and store keys.');
+  }
   try {
     const keyPair = nacl.box.keyPair();
     
@@ -47,19 +36,29 @@ export async function generateAndStoreKeys(userId) {
     const publicKey_b64 = uint8ArrayToBase64(keyPair.publicKey);
     const secretKey_b64 = uint8ArrayToBase64(keyPair.secretKey);
 
+    // Save private key locally
     await SecureStore.setItemAsync(`private_key_${userId}`, secretKey_b64);
 
+    console.log(`Attempting to save public key for user ID: ${userId}`);
+    
+    // Use upsert to ensure the public key is saved/updated correctly
+    // We include only the id and public_key to avoid overwriting other profile data if it exists
     const { error } = await supabase
       .from('profiles')
-      .update({ public_key: publicKey_b64 })
-      .eq('id', userId);
+      .upsert({ 
+        id: userId, 
+        public_key: publicKey_b64
+      }, { onConflict: 'id' });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase public key save error:', error.message, error.details);
+      throw error;
+    }
 
-    console.log(`Keys generated for user ${userId}: public=${publicKey_b64}`);
+    console.log(`Keys generated and saved for user ${userId}`);
     return { publicKey: publicKey_b64, privateKey: secretKey_b64 };
   } catch (error) {
-    console.error('Key generation error:', error);
+    console.error('Key generation and storage error:', error);
     throw error;
   }
 }
