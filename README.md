@@ -34,3 +34,8 @@
 - [ ] Enable users to tag items in their social media posts. 
 - [ ] Implement likes, comments, and sharing functionality for social posts. 
 - [ ] Create a category page featuring event-based and seasonal collections (e.g., Festival Fits, Halloween). 
+
+**Issues & Errors**
+- [ ] Fix list an item page: Upon creation  of listing, there is no indication to the user that it has been uploaded. Navigate to another page (profile or back to create listing page), or display an 'Upload Successful' message, or both. Also clear the current form inputs.
+- [ ] Fix Profile page display: Clean up personal info. Display listed items in card form with update/delete functionality (only if there are no rental agreements)
+- [ ] Fix explore page links to items: Extend link to item details page to span the whole item card, image included.

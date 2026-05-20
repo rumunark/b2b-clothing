@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Calendar } from 'react-native-calendars';
@@ -20,25 +20,58 @@ const CATEGORIES = [
 ];
 
 export default function ListScreen({ navigation }) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [size, setSize] = useState('');
-  const [category, setCategory] = useState('Fancy Dress');
+  const initialFormState = {
+    title: '',
+    description: '',
+    size: '',
+    category: 'Fancy Dress',
+    pricePerNight: '',
+    insuranceValue: '',
+    cleaningPrice: '',
+    durationPreset: '3',
+    customNights: '',
+    tagsInput: '',
+  };
+
+  const [form, setForm] = useState(initialFormState);
+  const { title, description, size, category, pricePerNight, insuranceValue, cleaningPrice, durationPreset, customNights, tagsInput } = form;
   const [assets, setAssets] = useState([]);
-  const [pricePerNight, setPricePerNight] = useState('');
-  const [insuranceValue, setInsuranceValue] = useState('');
-  const [cleaningPrice, setCleaningPrice] = useState('');
-  const [durationPreset, setDurationPreset] = useState('3'); // '1' | '3' | '7' | 'custom'
-  const [customNights, setCustomNights] = useState('');
   const [selectedDates, setSelectedDates] = useState({}); // {'YYYY-MM-DD': true}
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const insets = useSafeAreaInsets();
 
+  const updateForm = (field, value) => {
+    setFieldErrors((prev) => ({ ...prev, [field]: null }));
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const resetForm = () => {
+    setForm(initialFormState);
+    setAssets([]);
+    setSelectedDates({});
+    setError('');
+    setFieldErrors({});
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!title.trim()) errors.title = 'Title is required';
+    if (!size.trim()) errors.size = 'Size is required';
+    if (!pricePerNight.trim()) errors.pricePerNight = 'Price per night is required';
+    if (!insuranceValue.trim()) errors.insuranceValue = 'Insurance value is required';
+    if (durationPreset === 'custom' && !customNights.trim()) errors.customNights = 'Custom nights are required when duration is custom';
+    if (assets.length === 0) errors.assets = 'Please upload at least one image';
+    setFieldErrors(errors);
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
+
   // Recommend cleaning price for Formalwear
-  useMemo(() => {
-    if (category === 'Formalwear' && !cleaningPrice) setCleaningPrice('7.00');
+  useEffect(() => {
+    if (category === 'Formalwear' && !cleaningPrice) {
+      updateForm('cleaningPrice', '7.00');
+    }
   }, [category]);
 
   const markedDates = useMemo(() => {
@@ -61,6 +94,7 @@ export default function ListScreen({ navigation }) {
 
   const pickImages = async () => {
     setError('');
+    setFieldErrors((prev) => ({ ...prev, assets: null }));
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { setError('Permission required to access photos'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ allowsMultipleSelection: true, quality: 0.9, mediaTypes: ImagePicker.MediaTypeOptions.Images });
@@ -90,6 +124,11 @@ export default function ListScreen({ navigation }) {
   }
 
   const onSubmit = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -182,8 +221,10 @@ export default function ListScreen({ navigation }) {
       const { error: insErr } = await supabase.from('items').insert([payload]);
       if (insErr) throw insErr;
 
-      // Navigate on success
-      navigation.navigate('Tabs', { screen: 'Rent' });
+      // Clear page fields before navigation
+      resetForm();
+      navigation.navigate('Explore');
+      Alert.alert('Item Listing Created', 'You can view, edit and delete your listed items in Profile.');
 
     } catch (e) {
       setError(e?.message || String(e));
@@ -196,20 +237,21 @@ export default function ListScreen({ navigation }) {
     <Background>
       <ScrollView contentContainerStyle={[styles.container, { paddingBottom: insets.bottom }]}>
         <Label>Title</Label>
-        <Input value={title} onChangeText={setTitle} placeholder="e.g. Navy tuxedo" />
+        {fieldErrors.title ? <Text style={styles.error}>{fieldErrors.title}</Text> : null}
+        <Input value={title} onChangeText={(value) => updateForm('title', value)} placeholder="e.g. Navy tuxedo" />
 
         <Label>Description</Label>
-        <Input value={description} onChangeText={setDescription} placeholder="Short description…" multiline />
+        <Input value={description} onChangeText={(value) => updateForm('description', value)} placeholder="Short description…" multiline />
 
         <Label>Tags (comma separated)</Label>
         <Input
           value={tagsInput}
-          onChangeText={setTagsInput}
+          onChangeText={(value) => updateForm('tagsInput', value)}
           placeholder="e.g. tuxedo, ball gown, fancy dress, pub golf"
         />
         <View style={styles.row}>
           {CATEGORIES.map((c) => (
-            <TouchableOpacity key={c.key} onPress={() => setCategory(c.key)}
+            <TouchableOpacity key={c.key} onPress={() => updateForm('category', c.key)}
               style={[styles.chip, category === c.key && styles.chipActive]}>
               <Text style={[styles.chipText, category === c.key && styles.chipTextActive]}>{c.label}</Text>
             </TouchableOpacity>
@@ -217,10 +259,12 @@ export default function ListScreen({ navigation }) {
         </View>
 
         <Label>Size</Label>
-        <Input value={size} onChangeText={setSize} placeholder="S / M / L or 10 / 12…" />
+        {fieldErrors.size ? <Text style={styles.error}>{fieldErrors.size}</Text> : null}
+        <Input value={size} onChangeText={(value) => updateForm('size', value)} placeholder="S / M / L or 10 / 12…" />
 
         <Label>Rental price per night (£)</Label>
-        <Input value={pricePerNight} onChangeText={setPricePerNight} keyboardType="numeric" placeholder="e.g. 15" />
+        {fieldErrors.pricePerNight ? <Text style={styles.error}>{fieldErrors.pricePerNight}</Text> : null}
+        <Input value={pricePerNight} onChangeText={(value) => updateForm('pricePerNight', value)} keyboardType="numeric" placeholder="e.g. 15" />
 
         
         <Label>Preferred rental duration</Label>
@@ -231,7 +275,7 @@ export default function ListScreen({ navigation }) {
             { k: '7', t: '1 week' },
             { k: 'custom', t: 'Other' },
           ].map((opt) => (
-            <TouchableOpacity key={opt.k} onPress={() => setDurationPreset(opt.k)}
+            <TouchableOpacity key={opt.k} onPress={() => updateForm('durationPreset', opt.k)}
               style={[styles.chip, durationPreset === opt.k && styles.chipActive]}>
               <Text style={[styles.chipText, durationPreset === opt.k && styles.chipTextActive]}>{opt.t}</Text>
             </TouchableOpacity>
@@ -240,7 +284,8 @@ export default function ListScreen({ navigation }) {
         {durationPreset === 'custom' ? (
           <View style={{ marginTop: 8 }}>
             <Label>Custom nights</Label>
-            <Input value={customNights} onChangeText={setCustomNights} keyboardType="numeric" placeholder="e.g. 10" />
+            {fieldErrors.customNights ? <Text style={styles.error}>{fieldErrors.customNights}</Text> : null}
+            <Input value={customNights} onChangeText={(value) => updateForm('customNights', value)} keyboardType="numeric" placeholder="e.g. 10" />
           </View>
         ) : null}
 
@@ -259,15 +304,17 @@ export default function ListScreen({ navigation }) {
 
         
         <Label>Insurance value (£)</Label>
-        <Input value={insuranceValue} onChangeText={setInsuranceValue} keyboardType="numeric" placeholder="e.g. 150" />
+        {fieldErrors.insuranceValue ? <Text style={styles.error}>{fieldErrors.insuranceValue}</Text> : null}
+        <Input value={insuranceValue} onChangeText={(value) => updateForm('insuranceValue', value)} keyboardType="numeric" placeholder="e.g. 150" />
 
         
         <Label>Cleaning price (optional, £)</Label>
-        <Input value={cleaningPrice} onChangeText={setCleaningPrice} keyboardType="numeric" placeholder="e.g. 7" />
+        <Input value={cleaningPrice} onChangeText={(value) => updateForm('cleaningPrice', value)} keyboardType="numeric" placeholder="e.g. 7" />
 
         <Button variant="outline" onPress={pickImages}>
           {assets.length > 0 ? `Selected ${assets.length} image(s)` : 'Upload photos'}
         </Button>
+        {fieldErrors.assets ? <Text style={styles.error}>{fieldErrors.assets}</Text> : null}
 
         <View style={styles.row}>
           {assets.map((a) => (
