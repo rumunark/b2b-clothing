@@ -29,7 +29,14 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "enableGooglePay": true,
+          "merchantIdentifier": "merchant.com.b2bclothing" 
+        }
+      ]
     ],
     "extra": {
       "eas": {
