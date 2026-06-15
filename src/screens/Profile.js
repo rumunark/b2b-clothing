@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, Image, Linking, AppState } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, Linking, AppState } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Background from '../components/Background';
 import { supabase } from '../lib/supabaseClient';
-import { Button } from '../ui';
+import { Button, Card, Label } from '../ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { styles } from '../theme/styles';
-import { Ionicons } from '@expo/vector-icons';
 import {
   createOrGetStripeAccount,
   createAccountOnboardingLink,
@@ -14,8 +15,9 @@ import {
 } from '../lib/stripe';
 
 export default function ProfileScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
+
   const [email, setEmail] = useState('');
-  const [userId, setUserId] = useState('');
   const [fullName, setFullName] = useState('');
   const [dob, setDob] = useState('');
   const [age, setAge] = useState(null);
@@ -26,16 +28,12 @@ export default function ProfileScreen({ navigation }) {
   const [items, setItems] = useState([]);
   const [stripeStatus, setStripeStatus] = useState({ connected: false, onboarding_complete: false });
   const [stripeLoading, setStripeLoading] = useState(false);
-  const insets = useSafeAreaInsets();
 
-  // Tracks whether we sent the user off to Stripe, so we know to
-  // refresh status when they come back to the app.
   const awaitingStripeReturn = useRef(false);
 
   const loadProfile = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setEmail(user?.email ?? '');
-    setUserId(user?.id ?? '');
     if (!user) return;
 
     const { data: profile } = await supabase
@@ -75,7 +73,8 @@ export default function ProfileScreen({ navigation }) {
     const { data: myItems, count: listedCount } = await supabase
       .from('items')
       .select('id, title, description, image_url, images, price_per_day, size, owner_id, cleaning_price', { count: 'exact' })
-      .eq('owner_id', user.id);
+      .eq('owner_id', user.id)
+      .order('created_at', { ascending: false });
     setNumListed(listedCount ?? 0);
     setItems(myItems || []);
 
@@ -86,27 +85,21 @@ export default function ProfileScreen({ navigation }) {
     setNumRented(rentedCount ?? 0);
   }, []);
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+      if (awaitingStripeReturn.current) {
+        awaitingStripeReturn.current = false;
+        refreshStripeStatus();
+      }
+    }, [loadProfile])
+  );
 
   const refreshStripeStatus = useCallback(async () => {
     const status = await getStripeAccountStatus();
     setStripeStatus(status);
   }, []);
 
-  // Refresh when the screen regains focus (e.g. coming back from browser on Android)
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      if (awaitingStripeReturn.current) {
-        awaitingStripeReturn.current = false;
-        refreshStripeStatus();
-      }
-    });
-    return unsubscribe;
-  }, [navigation, refreshStripeStatus]);
-
-  // Refresh when the app comes back to the foreground (covers iOS too)
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'active' && awaitingStripeReturn.current) {
@@ -131,57 +124,129 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
-  return (
-    <Background>
-      <View style={[styles.container, styles.centered]}>
-        <View style={styles.column}>
+  const renderListing = ({ item }) => {
+    const thumbnail = item.image_url || (Array.isArray(item.images) && item.images[0]) || null;
+
+    return (
+      <TouchableOpacity
+        style={styles.listItemContainer}
+        onPress={() => navigation.navigate('ItemDetail', { id: item.id, showRent: false })}
+      >
+        {thumbnail ? (
+          <Image source={{ uri: thumbnail }} style={styles.listItemImage} />
+        ) : (
+          <View style={styles.listItemImage} />
+        )}
+        <View style={styles.listItemContent}>
+          <Text numberOfLines={1} style={styles.listItemTitle}>{item.title}</Text>
+          {item.size ? <Text style={[styles.body, { fontSize: 12, color: colors.gray500 }]}>Size: {item.size}</Text> : null}
+          <Text style={[styles.price, { fontSize: 14, marginTop: 4 }]}>
+            £{Number(item.price_per_day).toFixed(2)}/day
+            {item.cleaning_price ? ` • Cleaning £${Number(item.cleaning_price).toFixed(2)}` : ''}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const ListHeader = (
+    <View>
+      {/* Profile header */}
+      <View style={styles.headerPanel}>
+        <View style={[styles.row, { alignItems: 'center' }]}>
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} style={styles.avatar} />
           ) : (
-            <Ionicons name="person-circle-outline" size={96} color={colors.white} />
+            <Ionicons name="person-circle-outline" size={72} color={colors.white} />
           )}
-          <Text style={styles.label}>{fullName}</Text>
-        </View>
-
-        <Text style={styles.body}>Email: {email}</Text>
-        {dob ? <Text style={styles.body}>DOB: {dob}</Text> : null}
-        {age != null ? <Text style={styles.body}>Age: {age}</Text> : null}
-        <Text style={styles.body}>Verified: {verified ? 'Yes' : 'No'}</Text>
-        <Text style={styles.body}>Items listed: {numListed}</Text>
-        <Text style={styles.body}>Items rented: {numRented}</Text>
-
-        <View style={styles.column}>
-          <Text style={styles.body}>
-            Payouts:{' '}
-            {stripeStatus.onboarding_complete
-              ? 'Connected ✅'
-              : stripeStatus.connected
-              ? 'Setup incomplete ⚠️'
-              : 'Not connected'}
-          </Text>
-
-          {!stripeStatus.onboarding_complete && (
-            <Button onPress={handleConnectStripe} loading={stripeLoading}>
-              {stripeStatus.connected ? 'Finish Stripe setup' : 'Connect Stripe account'}
-            </Button>
-          )}
-
-          {stripeStatus.connected && !stripeStatus.onboarding_complete && (
-            <Button onPress={refreshStripeStatus}>Refresh status</Button>
-          )}
-        </View>
-
-        <Button onPress={() => navigation.navigate('EditProfile')}>Edit profile</Button>
-
-        {items.map(item => (
-          <View key={item.id}>
-            <Text style={styles.body}>{item.title}</Text>
-            <Text style={styles.body}>£{item.price_per_day}/day • Cleaning £{item.cleaning_price}</Text>
+          <View style={{ marginLeft: 12, flex: 1 }}>
+            <Text style={styles.label}>{fullName || 'Your profile'}</Text>
+            <Text style={[styles.body, { color: colors.gray100 }]}>{email}</Text>
+            {verified ? (
+              <View style={[styles.row, { alignItems: 'center', marginTop: 4 }]}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.pink} />
+                <Text style={[styles.body, { color: colors.gray100, marginLeft: 4 }]}>Verified</Text>
+              </View>
+            ) : null}
           </View>
-        ))}
+        </View>
 
-        <Button onPress={() => supabase.auth.signOut()}>Sign Out</Button>
+        {/* Stats row */}
+        <View style={[styles.row, { marginTop: 16 }]}>
+          <View style={[styles.chip, { flex: 1, alignItems: 'center' }]}>
+            <Text style={styles.chipText}>{numListed}</Text>
+            <Text style={[styles.chipText, { fontSize: 11 }]}>Listed</Text>
+          </View>
+          <View style={[styles.chip, { flex: 1, alignItems: 'center', marginLeft: 8 }]}>
+            <Text style={styles.chipText}>{numRented}</Text>
+            <Text style={[styles.chipText, { fontSize: 11 }]}>Rented</Text>
+          </View>
+          {dob ? (
+            <View style={[styles.chip, { flex: 1, alignItems: 'center', marginLeft: 8 }]}>
+              <Text style={styles.chipText}>{age}</Text>
+              <Text style={[styles.chipText, { fontSize: 11 }]}>Years old</Text>
+            </View>
+          ) : null}
+        </View>
+
+        <View style={{ height: 12 }} />
+        <Button onPress={() => navigation.navigate('EditProfile')} size="sm">Edit profile</Button>
       </View>
+
+      {/* Stripe Connect */}
+      <View style={styles.filterPanel}>
+        <Label>Payouts</Label>
+        <Text style={styles.body}>
+          {stripeStatus.onboarding_complete
+            ? 'Your Stripe account is connected ✅'
+            : stripeStatus.connected
+            ? 'Setup incomplete — finish onboarding to receive payouts ⚠️'
+            : 'Connect a Stripe account to receive payouts for your rentals.'}
+        </Text>
+
+        <View style={{ height: 8 }} />
+
+        {!stripeStatus.onboarding_complete && (
+          <Button onPress={handleConnectStripe} loading={stripeLoading} size="sm">
+            {stripeStatus.connected ? 'Finish Stripe setup' : 'Connect Stripe account'}
+          </Button>
+        )}
+
+        {stripeStatus.connected && !stripeStatus.onboarding_complete && (
+          <>
+            <View style={{ height: 8 }} />
+            <TouchableOpacity onPress={refreshStripeStatus}>
+              <Text style={[styles.body, { textAlign: 'center', textDecorationLine: 'underline' }]}>
+                Refresh status
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
+      <Text style={[styles.screenTitle, { marginTop: 16, marginBottom: 8 }]}>Your Listings</Text>
+    </View>
+  );
+
+  return (
+    <Background>
+      <FlatList
+        data={items}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderListing}
+        contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom * 2 }}
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={
+          <Text style={[styles.body, { textAlign: 'center', marginTop: 8 }]}>
+            You haven't listed any items yet.
+          </Text>
+        }
+        ListFooterComponent={
+          <View style={{ marginTop: 24, alignItems: 'center' }}>
+            <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
+          </View>
+        }
+      />
     </Background>
   );
 }
