@@ -33,6 +33,7 @@ import HeaderBar from './src/components/HeaderBar';
 
 // Notification function imports
 import { usePushNotifications, sendPushNotification } from './UsePushNotifications';
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 // Create stack navigators for different app sections
 const AuthStack = createNativeStackNavigator();
@@ -182,18 +183,20 @@ export default function App() {
 
   // Render the appropriate navigation stack based on user state
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        {routeKey === 'Auth' ? (
-          <AuthStackNavigator />
-        ) : routeKey === 'Onboarding' ? (
-          <OnboardingStackNavigator />
-        ) : (
-          <AppStackNavigator />
-        )}
-        <StatusBar style="auto" />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    //<StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          {routeKey === 'Auth' ? (
+            <AuthStackNavigator />
+          ) : routeKey === 'Onboarding' ? (
+            <OnboardingStackNavigator />
+          ) : (
+            <AppStackNavigator />
+          )}
+          <StatusBar style="auto" />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    //</StripeProvider>
   );
 }
 
