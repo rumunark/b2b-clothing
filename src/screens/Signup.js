@@ -77,7 +77,7 @@ export default function Signup() {
       email,
       password,
       options: {
-        emailRedirectTo: 'b2b-clothing://auth/callback',
+        emailRedirectTo: 'b2bclothing://auth/callback',
       },
     });
     if (signUpError) {

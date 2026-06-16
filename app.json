@@ -1,14 +1,16 @@
 {
   "expo": {
-    "name": "b2b-clothing-mobile",
+    "name": "b2bclothing",
     "slug": "b2b-clothing",
-    "scheme": "b2b-clothing",
+    "scheme": "b2bclothing",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.b2bclothing",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
