@@ -16,6 +16,7 @@
     "@stripe/stripe-react-native": "0.64.0",
     "@supabase/supabase-js": "^2.56.0",
     "@types/react": "~19.2.10",
+    "base64-arraybuffer": "^1.0.2",
     "dayjs": "^1.11.18",
     "expo": "56.0.11",
     "expo-constants": "~56.0.18",

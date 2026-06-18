@@ -3,6 +3,7 @@ import { View, Text, TextInput, Image, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import Dropdown from '../ui/Dropdown';
 import * as ImagePicker from 'expo-image-picker';
+import { decode } from 'base64-arraybuffer';
 import Background from '../components/Background';
 import { Button } from '../ui'
 import { supabase } from '../lib/supabaseClient';
@@ -75,7 +76,10 @@ export default function Onboarding() {
     if (upsertError) {
       setError(upsertError.message);
     } else {
-      await supabase.auth.refreshSession(); // Navigate to the main app tabs after successful onboarding
+      //await supabase.auth.refreshSession();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
     }
     setSaving(false);
   };
@@ -83,26 +87,34 @@ export default function Onboarding() {
   const pickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { setError('Permission to access images is required'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, quality: 0.8 });
+    
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.Images, allowsEditing: true, quality: 0.8, base64: true });
+    
     if (result.canceled) return;
+    
     try {
       const asset = result.assets[0];
-      setAvatarUri(asset.uri);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      
       const fileExt = ((asset.fileName && asset.fileName.includes('.')) ? asset.fileName.split('.').pop() : 'jpg')?.toLowerCase();
       const filePath = `avatars/${user.id}-${Date.now()}.${fileExt}`;
-      const res = await fetch(asset.uri);
-      const blob = await res.blob();
       const contentType = asset.mimeType || `image/${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, blob, { contentType, upsert: true });
+
+      if (!asset.base64) {throw new Error('Image picker did not return base64 data');}
+
+      const arrayBuffer = decode(asset.base64);
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, arrayBuffer, { contentType, upsert: true });
+        
       if (uploadError) { setError(uploadError.message); return; }
-      // Public bucket: use public URL immediately
+
       const { data: pub, error: pubErr } = await supabase.storage.from('avatars').getPublicUrl(filePath);
       if (pubErr || !pub?.publicUrl) {
         setError('Could not get public URL from avatars bucket');
         return;
       }
+      
       setAvatarUri(pub.publicUrl);
     } catch (e) {
       const message = (e && typeof e === 'object' && 'message' in e) ? e.message : 'Avatar upload failed';
@@ -112,9 +124,11 @@ export default function Onboarding() {
 
   return (
     <Background>
-      <View style={[styles.containerBackground, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        {avatarUri ? <Image source={{ uri: avatarUri }} style={styles.avatar} /> : null}
-        <Button onPress={pickAvatar} variant="outline" size="md">{avatarUri ? 'Change avatar' : 'Pick avatar'}</Button>
+      <View style={[styles.containerBackground, {paddingBottom: insets.bottom}]}>
+        <View style={[styles.row, { alignItems: 'center', marginBottom: 16 }]}>
+        {avatarUri ? <Image source={{ uri: avatarUri }} style={[styles.avatar, { marginRight: 10 }]} /> : null}
+        <Button onPress={pickAvatar} variant="outline" size="md" icon="create-outline" iconColor={colors.white}>{avatarUri ? 'Change avatar' : 'Pick avatar'}</Button>
+        </View>
         <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} />
         <Dropdown title="Select a City" enumType='location' value={city} onValueChange={setCity} placeholder="Select a City"/>
         <TextInput style={styles.input} placeholder="DOB (DD/MM/YYYY)" value={dob} onChangeText={setDob} />

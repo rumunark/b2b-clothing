@@ -21,17 +21,19 @@ import { fonts } from '../theme/fonts';
  * @param {object} style - Additional styles to apply to the button container
  * @param {object} textStyle - Additional styles to apply to the button text
  */
-export default function Button({ children, onPress, variant = 'outline', size = 'lg', style, textStyle, icon = null, iconColor = null }) {
+export default function Button({ children, onPress, variant = 'outline', size = 'lg', style, textStyle, icon = null, iconColor = null, loading = false }) {
   return (
     <TouchableOpacity 
       onPress={onPress} 
       style={[buttonVariants.base, buttonVariants[variant], buttonVariants[size], style]} 
       activeOpacity={0.85}
     >
+    <>
       {icon && <Ionicons name={icon} size={24} color={iconColor ? iconColor : colors.navy} marginRight={8} />}
       <Text style={[buttonVariants.text, variant === 'solid' || variant === 'gold' ? buttonVariants.textSolid : buttonVariants.textOutline, textStyle]}>
         {children}
       </Text>
+    </>
     </TouchableOpacity>
   );
 }

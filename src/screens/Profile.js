@@ -149,10 +149,11 @@ export default function ProfileScreen({ navigation }) {
     );
   };
 
-  const ListHeader = (
-    <View>
-      {/* Profile header */}
-      <View style={styles.headerPanel}>
+  const ProfileHeader = (
+    <>
+      <View 
+        style={styles.headerPanel}>
+        {/* Profile Info Row */}
         <View style={[styles.row, { alignItems: 'center' }]}>
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} style={styles.avatar} />
@@ -171,82 +172,62 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Stats row */}
-        <View style={[styles.row, { marginTop: 16 }]}>
+        {/* Stats Row */}
+        <View style={[styles.row, { marginTop: 16, width: '100%' }]}>
           <View style={[styles.chip, { flex: 1, alignItems: 'center' }]}>
             <Text style={styles.chipText}>{numListed}</Text>
             <Text style={[styles.chipText, { fontSize: 11 }]}>Listed</Text>
           </View>
-          <View style={[styles.chip, { flex: 1, alignItems: 'center', marginLeft: 8 }]}>
+          <View style={[styles.chip, { flex: 1, alignItems: 'center' }]}>
             <Text style={styles.chipText}>{numRented}</Text>
             <Text style={[styles.chipText, { fontSize: 11 }]}>Rented</Text>
           </View>
-          {dob ? (
-            <View style={[styles.chip, { flex: 1, alignItems: 'center', marginLeft: 8 }]}>
-              <Text style={styles.chipText}>{age}</Text>
-              <Text style={[styles.chipText, { fontSize: 11 }]}>Years old</Text>
-            </View>
-          ) : null}
         </View>
 
-        <View style={{ height: 12 }} />
-        <Button onPress={() => navigation.navigate('EditProfile')} size="sm">Edit profile</Button>
+        <View style={[styles.row, { marginTop: 16}]}>
+            <Button onPress={() => navigation.navigate('EditProfile')} size="md" style={{ flex: 1 }}>
+              Edit profile
+            </Button>
+            <Button onPress={stripeStatus.onboarding_complete ? () => {} : handleConnectStripe} size="md" style={{ flex: 1 }}>
+              {stripeStatus.onboarding_complete 
+                ? 'Stripe Connected' 
+                : stripeStatus.connected 
+                ? 'Stripe Incomplete' 
+                : 'Connect Stripe'}
+            </Button>
+        </View>
       </View>
 
-      {/* Stripe Connect */}
-      <View style={styles.filterPanel}>
-        <Label>Payouts</Label>
-        <Text style={styles.body}>
-          {stripeStatus.onboarding_complete
-            ? 'Your Stripe account is connected ✅'
-            : stripeStatus.connected
-            ? 'Setup incomplete — finish onboarding to receive payouts ⚠️'
-            : 'Connect a Stripe account to receive payouts for your rentals.'}
-        </Text>
 
-        <View style={{ height: 8 }} />
-
-        {!stripeStatus.onboarding_complete && (
-          <Button onPress={handleConnectStripe} loading={stripeLoading} size="sm">
-            {stripeStatus.connected ? 'Finish Stripe setup' : 'Connect Stripe account'}
-          </Button>
-        )}
-
-        {stripeStatus.connected && !stripeStatus.onboarding_complete && (
-          <>
-            <View style={{ height: 8 }} />
-            <TouchableOpacity onPress={refreshStripeStatus}>
-              <Text style={[styles.body, { textAlign: 'center', textDecorationLine: 'underline' }]}>
-                Refresh status
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-
-      <Text style={[styles.screenTitle, { marginTop: 16, marginBottom: 8 }]}>Your Listings</Text>
-    </View>
+    </>
   );
 
   return (
     <Background>
+      {ProfileHeader}
+      <View style={styles.container}>
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderListing}
-        contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom * 2 }}
-        ListHeaderComponent={ListHeader}
+        contentContainerStyle={{ paddingBottom: insets.bottom * 2 }}
+        ListHeaderComponent={
+          <Text style={[styles.screenTitle, { marginBottom : 8}]}>
+            Your Listings
+          </Text>
+        }
         ListEmptyComponent={
-          <Text style={[styles.body, { textAlign: 'center', marginTop: 8 }]}>
+          <Text style={[styles.body, { textAlign: 'center', marginTop: 16, marginHorizontal: 16 }]}>
             You haven't listed any items yet.
           </Text>
         }
         ListFooterComponent={
-          <View style={{ marginTop: 24, alignItems: 'center' }}>
+          <View style={{ marginTop: 24, marginBottom: 24, alignItems: 'center' }}>
             <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
           </View>
         }
       />
+      </View>
     </Background>
   );
 }
