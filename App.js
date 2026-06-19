@@ -3,7 +3,7 @@
  * 
  * This is the root component that handles:
  * - Authentication state management
- * - Navigation between different app sections (Auth, Onboarding, Main App)
+ * - Navigation between different app sections (Auth, EditProfile, Main App)
  * - User profile validation and routing
  * - Loading states during authentication checks
  */
@@ -18,7 +18,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Screen imports for different app sections
 import Login from './src/screens/Login';
-import Onboarding from './src/screens/Onboarding';
+import EditProfile from './src/screens/EditProfile';
 import Home from './src/screens/Home';
 import ChatInterface from './src/screens/ChatInterface';
 import ApproveRental from './src/screens/ApproveRental';
@@ -37,7 +37,7 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 
 // Create stack navigators for different app sections
 const AuthStack = createNativeStackNavigator();
-const OnboardingStack = createNativeStackNavigator();
+//const EditProfileStack = createNativeStackNavigator();
 const AppStack = createNativeStackNavigator();
 
 /**
@@ -47,28 +47,29 @@ const AppStack = createNativeStackNavigator();
  * - Login screen
  * - Signup screen
  */
-function AuthStackNavigator() {
+function AuthStackNavigator({ initialRouteName }) {
   return (
-    <AuthStack.Navigator initialRouteName="Welcome">
+    <AuthStack.Navigator initialRouteName={initialRouteName}>
       <AuthStack.Screen name="Welcome" component={Landing} options={{ headerShown: false }} />
-      <AuthStack.Screen name="Login" component={Login} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
-      <AuthStack.Screen name="Signup" component={Signup} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} />  }} />
+      <AuthStack.Screen name="Login" component={Login} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} /> }} />
+      <AuthStack.Screen name="Signup" component={Signup} options={{ headerShown: true, header: () => <HeaderBar title="" showBack={true} showIcons={false} /> }} />
+      <AuthStack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: true, header: () => <HeaderBar title="Complete Profile" showBack={false} showIcons={false} /> }} />
     </AuthStack.Navigator>
   );
 }
 
 /**
- * Onboarding Stack Navigator
+ * EditProfile Stack Navigator
  * Handles the user profile setup flow for authenticated users
  * who haven't completed their profile information
  */
-function OnboardingStackNavigator() {
-  return (
-    <OnboardingStack.Navigator>
-      <OnboardingStack.Screen name="Onboarding" component={Onboarding} options={{ headerShown: true, header: () => <HeaderBar title="Complete Onboarding" showBack={false} showIcons={false} /> }} />
-    </OnboardingStack.Navigator>
-  );
-}
+// function EditProfileStackNavigator() {
+//   return (
+//     <EditProfileStack.Navigator>
+//       <EditProfileStack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: true, header: () => <HeaderBar title="Complete Profile" showBack={false} showIcons={false} /> }} />
+//     </EditProfileStack.Navigator>
+//   );
+// }
 
 /**
  * Main App Stack Navigator
@@ -82,7 +83,7 @@ function AppStackNavigator() {
       <AppStack.Screen name="Chat" component={ChatInterface} options={{ headerShown: false }} />
       <AppStack.Screen name="Approval" component={ApproveRental} options={{ headerShown: true, header: () => <HeaderBar title="Approve" showBack={true} showIcons={false} /> }}/>
       <AppStack.Screen name="ItemDetail" component={ItemDetails} options={({ route }) => ({headerShown: true, header: () => <HeaderBar title="Details" showBack={true} showIcons={false} /> })}/>
-      <AppStack.Screen name="EditProfile" component={Onboarding} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Basket" component={Basket} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Settings" component={Settings} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
     </AppStack.Navigator>
@@ -96,8 +97,10 @@ function AppStackNavigator() {
 export default function App() {
   // State to track loading status during authentication checks
   const [isLoading, setIsLoading] = useState(true);
-  // State to determine which navigation stack to show: 'Auth' | 'Onboarding' | 'App'
+  // State to determine which navigation stack to show: 'Auth' | 'EditProfile' | 'App'
   const [routeKey, setRouteKey] = useState('Auth');
+  const [authInitialRoute, setAuthInitialRoute] = useState('Welcome'); // 'Welcome' | 'EditProfile'
+
   // // Push notification handler
   // const { expoPushToken, notification } = usePushNotifications();
   // console.log(expoPushToken);
@@ -134,6 +137,7 @@ export default function App() {
         if (!user) {
           // User not authenticated - show auth stack
           setRouteKey('Auth');
+          setAuthInitialRoute('Welcome');
           setIsLoading(false);
           return;
         }
@@ -145,12 +149,17 @@ export default function App() {
           .eq('id', user.id)
           .maybeSingle();
 
-        // Check if user needs to complete onboarding
+        // Check if user needs to complete profile
         const needsOnboarding = !profile || !profile.full_name || !profile.city;
-        setRouteKey(needsOnboarding ? 'Onboarding' : 'App');
+        if (needsOnboarding) {
+          setRouteKey('Auth');
+          setAuthInitialRoute('EditProfile');
+        } else {
+          setRouteKey('App');
+        }
       } catch (e) {
-        // Error occurred - default to auth stack
         setRouteKey('Auth');
+        setAuthInitialRoute('Welcome');
       } finally {
         setIsLoading(false);
       }
@@ -182,21 +191,17 @@ export default function App() {
   }
 
   // Render the appropriate navigation stack based on user state
-  return (
-    //<StripeProvider publishableKey={process.env.STRIPE_PUBLISHABLE_KEY}>
-      <SafeAreaProvider>
-        <NavigationContainer>
-          {routeKey === 'Auth' ? (
-            <AuthStackNavigator />
-          ) : routeKey === 'Onboarding' ? (
-            <OnboardingStackNavigator />
-          ) : (
-            <AppStackNavigator />
-          )}
-          <StatusBar style="auto" />
-        </NavigationContainer>
-      </SafeAreaProvider>
-    //</StripeProvider>
+    return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        {routeKey === 'Auth' ? (
+          <AuthStackNavigator key={authInitialRoute} initialRouteName={authInitialRoute} />
+        ) : (
+          <AppStackNavigator />
+        )}
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 

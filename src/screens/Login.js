@@ -45,10 +45,14 @@ export default function Login() {
 
     const user = data.user;
     if (user) {
-      const publicKey = await getPublicKey(user.id);
-      if (!publicKey) {
-        console.log(`User ${user.id} is missing public key. Generating...`);
-        await generateAndStoreKeys(user.id);
+      try {
+        const publicKey = await getPublicKey(user.id);
+        if (!publicKey) {
+          console.log(`User ${user.id} is missing public key. Generating...`);
+          await generateAndStoreKeys(user.id);
+        }
+      } catch (e) {
+        console.error('Key setup failed:', e);
       }
     }
     setLoading(false);

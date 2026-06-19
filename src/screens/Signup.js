@@ -16,6 +16,8 @@ import Background from '../components/Background';
 import { Input, Label, Alert, Button, Dropdown } from '../ui'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import * as Linking from 'expo-linking';
+
 
 /**
  * Signup Component
@@ -29,8 +31,6 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [city, setCity] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -38,6 +38,20 @@ export default function Signup() {
   const [showEmailAlert, setShowEmailAlert] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+
+    
+  useEffect(() => {
+    const sub = Linking.addEventListener('url', async ({ url }) => {
+      const { queryParams } = Linking.parse(url);
+      if (queryParams?.access_token && queryParams?.refresh_token) {
+        await supabase.auth.setSession({
+          access_token: queryParams.access_token,
+          refresh_token: queryParams.refresh_token,
+        });
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const isStrongPassword = (pw) => {
     const value = String(pw || '');
@@ -85,14 +99,12 @@ export default function Signup() {
       setLoading(false);
       return;
     }
-    const user = data.user;
-    if (user) {
-      await supabase.from('profiles').upsert({ id: user.id, full_name: fullName, city: city });
 
-      // Update user profile with public key
-      await generateAndStoreKeys(user.id);
-      
-      // Show email verification alert after successful signup
+    if (data.session) {
+      // Email confirmation is OFF
+      navigation.navigate('EditProfile');
+    } else {
+      // Confirmation ON
       setShowEmailAlert(true);
     }
     setLoading(false);
@@ -109,8 +121,6 @@ export default function Signup() {
     setConfirmEmail('');
     setPassword('');
     setConfirmPassword('');
-    setFullName('');
-    setCity('');
     setError('');
     navigation.navigate('Welcome');
   };
@@ -123,20 +133,10 @@ export default function Signup() {
         <Input placeholder="you@example.com" autoCapitalize="none" value={email} onChangeText={setEmail} />
         <Label>Confirm Email</Label>
         <Input placeholder="you@example.com" autoCapitalize="none" value={confirmEmail} onChangeText={setConfirmEmail} />
-        <Label>Password - </Label>
+        <Label>Password</Label>
         <Input placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
         <Label>Confirm Password</Label>
         <Input placeholder="••••••••" secureTextEntry value={confirmPassword} onChangeText={setConfirmPassword} />
-        <Label>Full name</Label>
-        <Input value={fullName} onChangeText={setFullName} />
-        <Label>City</Label>
-        <Dropdown 
-          title="Select a City"
-          enumType='location'
-          value={city} 
-          onValueChange={setCity}
-          placeholder="Select a City"
-        />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Button variant="gold" onPress={onSignup}>{loading ? '...' : 'Sign up'}</Button>
       </View>
