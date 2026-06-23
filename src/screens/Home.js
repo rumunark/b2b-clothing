@@ -14,7 +14,6 @@ export default function Home({ navigation }) {
   const [activeChats, setActiveChats] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load pending requests (for sellers)
   const loadRequests = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -23,13 +22,7 @@ export default function Home({ navigation }) {
       const { data, error } = await supabase
         .from('requests')
         .select(`
-          id,
-          buyer_id,
-          start_date,
-          end_date,
-          nights,
-          total_price,
-          status,
+          id, buyer_id, start_date, end_date, nights, total_price, status,
           items:item_id (id, title, image_url, price_per_day),
           profiles:buyer_id (full_name)
         `)
@@ -44,7 +37,6 @@ export default function Home({ navigation }) {
     }
   }, []);
 
-  // Load active chats (for both buyers and sellers)
   const loadActiveChats = useCallback(async () => {
     setLoading(true);
     try {
@@ -54,38 +46,37 @@ export default function Home({ navigation }) {
       const { data, error } = await supabase
         .from('chats')
         .select(`
-          id,
-          sender_id,
-          receiver_id,
-          chat,
-          created_at,
-          updated_at,
-          item_id,
+          id, sender_id, receiver_id, chat, created_at, updated_at,
+          item_id, request_id,
           items:item_id (id, title, image_url),
           sender:sender_id (full_name),
           receiver:receiver_id (full_name)
         `)
-        .or(`sender_id.eq.${user.id}, receiver_id.eq.${user.id}`)
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
-      const latestChats = {};
-      
+      const dedupMap = {};
+
       for (const chat of data || []) {
-        const isReciever = chat.sender_id === user.id;
-
-        const partnerId = isReciever ? chat.receiver_id : chat.sender_id;
-        const partnerName = isReciever ? chat.receiver?.full_name : chat.sender?.full_name;
-
-        chat.partnerId = partnerId;
-        chat.partnerName = partnerName || 'Unknown User'; // Fallback if null
-
-        if (!latestChats[partnerId] || new Date(chat.updated_at) > new Date(latestChats[partnerId].updated_at)) {
-          latestChats[partnerId] = chat;
+        // Skip self-chats
+        if (chat.sender_id === chat.receiver_id) continue;
+        // Skip chats whose request was cancelled or declined
+        const reqStatus = chat.requests?.status;
+        if (reqStatus === 'cancelled' || reqStatus === 'declined') continue;
+        const isSender = chat.sender_id === user.id;
+        chat.partnerId = isSender ? chat.receiver_id : chat.sender_id;
+        chat.partnerName = (isSender
+          ? chat.receiver?.full_name
+          : chat.sender?.full_name) || 'Unknown User';
+        const key = `${chat.partnerId}_${chat.item_id}`;
+        if (!dedupMap[key] || new Date(chat.updated_at) > new Date(dedupMap[key].updated_at)) {
+          dedupMap[key] = chat;
         }
       }
-      setActiveChats(Object.values(latestChats));
+
+      setActiveChats(Object.values(dedupMap));
     } catch (e) {
       Alert.alert('Error loading chats', e.message || String(e));
     } finally {
@@ -93,10 +84,7 @@ export default function Home({ navigation }) {
     }
   }, []);
 
-  useEffect(() => {
-    loadRequests();
-    loadActiveChats();
-  }, []);
+  useEffect(() => { loadRequests(); loadActiveChats(); }, []);
 
   useFocusEffect(useCallback(() => {
     loadRequests();
@@ -104,30 +92,27 @@ export default function Home({ navigation }) {
   }, [loadRequests, loadActiveChats]));
 
   const renderRequest = ({ item }) => {
-    //const itemPrice = Number(item.items?.price_per_day || 0);
     const netAmount = (item.total_price * 0.95).toFixed(2);
-    const buyerName = item.profiles?.full_name || 'Unknown User'; 
-    
+    const buyerName = item.profiles?.full_name || 'Unknown User';
+
     return (
       <TouchableOpacity
         style={styles.listItemContainer}
-        onPress={() => navigation.navigate('Approval', { 
+        onPress={() => navigation.navigate('Approval', {
           requestId: item.id,
           buyerId: item.buyer_id,
-          buyerName: buyerName,
+          buyerName,
           item: item.items,
           startDate: item.start_date,
           endDate: item.end_date,
           nights: item.nights,
           totalPrice: item.total_price,
-          netAmount: netAmount
+          netAmount,
         })}
       >
-        {item.items?.image_url ? (
-          <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
-        ) : (
-          <View style={styles.listItemImage} />
-        )}
+        {item.items?.image_url
+          ? <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
+          : <View style={styles.listItemImage} />}
         <View style={styles.listItemContent}>
           <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
           <Text style={styles.body}>From: {buyerName}</Text>
@@ -147,22 +132,18 @@ export default function Home({ navigation }) {
       style={styles.listItemContainer}
       onPress={() => navigation.navigate('Chat', {
         chatId: item.id,
-        otherUserId: item.partnerId,     // Use the calculated ID
-        otherUserName: item.partnerName, // Use the calculated Name
+        otherUserId: item.partnerId,
+        otherUserName: item.partnerName,
         item: item.items,
+        requestId: item.request_id,
       })}
     >
-      {item.items?.image_url ? (
-        <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
-      ) : (
-        <View style={styles.listItemImage} />
-      )}
+      {item.items?.image_url
+        ? <Image source={{ uri: item.items.image_url }} style={styles.listItemImage} />
+        : <View style={styles.listItemImage} />}
       <View style={styles.listItemContent}>
-        <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Request'}</Text>
-        
-        {/* Display the calculated Partner Name */}
+        <Text style={styles.listItemTitle}>{item.items?.title || 'Rental Chat'}</Text>
         <Text style={styles.body}>With: {item.partnerName}</Text>
-        
         <Text style={[styles.body, { fontSize: 12, color: colors.gray500 }]}>
           {new Date(item.updated_at).toLocaleDateString()}
         </Text>
@@ -173,30 +154,17 @@ export default function Home({ navigation }) {
   return (
     <Background>
       <ScrollView style={[styles.container, { paddingBottom: insets.bottom * 2 }]}>
-        
-        {/* Pending Requests Section (Seller View) */}
         {requests.length > 0 && (
           <View style={{ marginBottom: 16 }}>
             <Text style={[styles.screenTitle, { marginBottom: 12 }]}>Pending Requests</Text>
-            <FlatList
-              data={requests}
-              keyExtractor={(item) => String(item.id)}
-              renderItem={renderRequest}
-              scrollEnabled={false}
-            />
+            <FlatList data={requests} keyExtractor={(i) => String(i.id)} renderItem={renderRequest} scrollEnabled={false} />
           </View>
         )}
 
-        {/* Active Chats Section */}
         {activeChats.length > 0 ? (
           <View>
             <Text style={[styles.screenTitle, { marginBottom: 12 }]}>Active Chats</Text>
-            <FlatList
-              data={activeChats}
-              keyExtractor={(item) => String(item.id)}
-              renderItem={renderChat}
-              scrollEnabled={false}
-            />
+            <FlatList data={activeChats} keyExtractor={(i) => String(i.id)} renderItem={renderChat} scrollEnabled={false} />
           </View>
         ) : (
           requests.length === 0 && (
