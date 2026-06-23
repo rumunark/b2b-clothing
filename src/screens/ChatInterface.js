@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 import { decryptMessage, encryptMessage, getPrivateKey, getPublicKey } from '../lib/encryption';
+import { ensureUserKeys } from '../lib/keyManager';
 import { styles as themeStyles } from '../theme/styles';
 import Background from '../components/Background';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -120,16 +121,19 @@ export default function ChatInterface({ route, navigation }) {
   const loadMessages = useCallback(async () => {
     try {
       setLoading(true);
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigation.goBack(); return; }
       setCurrentUserId(user.id);
-
+      // No ensureUserKeys here — keys are set up at login and stable for the session.
       const privateKey = await getPrivateKey(user.id);
       const otherPublicKey = await getPublicKey(otherUserId);
-      
-      if (!privateKey || !otherPublicKey) {
-        Alert.alert('Encryption Error', 'Could not load encryption keys');
+      if (!privateKey) {
+        Alert.alert('Encryption Error', 'Please log out and back in to restore your keys.');
+        setLoading(false);
+        return;
+      }
+      if (!otherPublicKey) {
+        Alert.alert('Encryption Error', `${otherUserName} hasn't set up encryption yet.`);
         setLoading(false);
         return;
       }

@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { generateAndStoreKeys, getPublicKey } from '../lib/encryption';
+import { ensureUserKeys } from '../lib/keyManager';
 import { supabase } from '../lib/supabaseClient';
 import { colors } from '../theme/colors';
 import { styles } from '../theme/styles';
@@ -100,8 +100,11 @@ export default function Signup() {
       return;
     }
 
+    
+
     if (data.session) {
       // Email confirmation is OFF
+      await ensureUserKeys(data.user.id, password);
       navigation.navigate('EditProfile');
     } else {
       // Confirmation ON

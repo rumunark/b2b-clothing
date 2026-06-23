@@ -7,50 +7,34 @@
 
 import { useState } from 'react';
 import { View, Text } from 'react-native';
-import { colors } from '../theme/colors';
 import Background from '../components/Background';
-import { Input, Label, Button } from '../ui'
+import { Input, Label, Button } from '../ui';
 import { supabase } from '../lib/supabaseClient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from '../theme/styles';
-import { generateAndStoreKeys, getPublicKey } from '../lib/encryption';
+import { ensureUserKeys } from '../lib/keyManager';
 
-/**
- * Login Component
- * 
- * Handles user authentication with email/password validation,
- * error handling, and loading states during sign-in process.
- */
 export default function Login() {
-  // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const insets = useSafeAreaInsets();
 
-  /**
-   * Handles user login process
-   * Authenticates user with Supabase Auth and manages loading/error states
-   */
   const onLogin = async () => {
     setLoading(true);
     setError('');
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error: signInError } =
+      await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
       setError(signInError.message);
       setLoading(false);
       return;
     }
-
-    const user = data.user;
-    if (user) {
+    if (data.user) {
       try {
-        const publicKey = await getPublicKey(user.id);
-        if (!publicKey) {
-          console.log(`User ${user.id} is missing public key. Generating...`);
-          await generateAndStoreKeys(user.id);
-        }
+        // The ONE place keys are checked. Password = passphrase.
+        await ensureUserKeys(data.user.id, password);
       } catch (e) {
         console.error('Key setup failed:', e);
       }
@@ -68,7 +52,7 @@ export default function Login() {
         <Input placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <View style={{ height: 16 }} />
-        <Button variant="gold" onPress={onLogin}>{loading ? '...' : 'Login'}</Button>
+        <Button variant="gold" onPress={onLogin}>{loading ? 'Securing keys...' : 'Login'}</Button>
       </View>
     </Background>
   );
