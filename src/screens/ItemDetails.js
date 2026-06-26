@@ -18,6 +18,7 @@ export default function ItemDetails() {
   const [ratingAvg, setRatingAvg] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   // rent picker state
   const [basketItem, setBasketItem] = useState(null);
@@ -70,13 +71,16 @@ export default function ItemDetails() {
         setIsWishlisted(!!wishlistEntry);
       }
 
-      if (itemData?.owner_id) {
+      if (itemData?.id) {
         const { data: revs } = await supabase
           .from('reviews')
-          .select('rating')
-          .eq('reviewee_id', itemData.owner_id);
-        const count = revs?.length ?? 0;
-        const avg = count ? revs.reduce((s, r) => s + (Number(r.rating) || 0), 0) / count : 0;
+          .select('rating, comment, created_at')
+          .eq('item_id', itemData.id)
+          .order('created_at', { ascending: false });
+        const list = revs || [];
+        const count = list.length;
+        const avg = count ? list.reduce((s, r) => s + (Number(r.rating) || 0), 0) / count : 0;
+        setReviews(list);
         setRatingAvg(avg);
         setRatingCount(count);
       }
@@ -369,6 +373,35 @@ export default function ItemDetails() {
             <View style={{ height: 12 }} />
             <Button onPress={handleSendRequest} variant="gold">Send Request</Button>
             <View style={{ height: 12 }} />
+          </View>
+        )}
+        {reviews.length > 0 && (
+          <View style={{ marginTop: 24 }}>
+            <Text style={styles.screenTitle}>Reviews</Text>
+            <View style={{ height: 8 }} />
+            {reviews.map((r, i) => (
+              <View
+                key={i}
+                style={[styles.listItemContainer, { flexDirection: 'column', alignItems: 'flex-start' }]}
+              >
+                <View style={styles.row}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Ionicons
+                      key={n}
+                      name={n <= r.rating ? 'star' : 'star-outline'}
+                      size={16}
+                      color={colors.yellow}
+                    />
+                  ))}
+                </View>
+                {r.comment ? (
+                  <Text style={[styles.body, { marginTop: 6 }]}>{r.comment}</Text>
+                ) : null}
+                <Text style={[styles.body, { fontSize: 12, color: colors.gray500, marginTop: 6 }]}>
+                  {new Date(r.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>

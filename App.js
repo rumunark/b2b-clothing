@@ -29,6 +29,7 @@ import ItemDetails from './src/screens/ItemDetails';
 import Basket from './src/screens/Basket';
 import Settings from './src/screens/Settings';
 import Explore from './src/screens/Explore';
+import Review from './src/screens/Review';
 import HeaderBar from './src/components/HeaderBar';
 
 // Notification function imports
@@ -86,6 +87,7 @@ function AppStackNavigator() {
       <AppStack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: true, header: () => <HeaderBar title="Edit profile" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Basket" component={Basket} options={{ headerShown: true, header: () => <HeaderBar title="Your Basket" showBack={true} showIcons={false} /> }} />
       <AppStack.Screen name="Settings" component={Settings} options={{ headerShown: true, header: () => <HeaderBar title="Settings" showBack={true} showIcons={false} /> }} />
+      <AppStack.Screen name="Review" component={Review} options={{ headerShown: true, header: () => <HeaderBar title="Leave a Review" showBack={true} showIcons={false} /> }}/>
     </AppStack.Navigator>
   );
 }

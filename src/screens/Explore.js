@@ -24,6 +24,7 @@ export default function Explore() {
   const [carouselIndexMap, setCarouselIndexMap] = useState(new Map());
   const [imageWidthMap, setImageWidthMap] = useState(new Map());
   const [showFilters, setShowFilters] = useState(false);
+  const [ratingsMap, setRatingsMap] = useState(new Map());
   
   // Filters
   const [filterCategory, setFilterCategory] = useState('');
@@ -41,6 +42,26 @@ export default function Explore() {
       .order('created_at', { ascending: false })
       .range(0, 49);
     list = data ?? [];
+
+    // Fetch & aggregate ratings for these items
+    const itemIds = list.map((i) => i.id);
+    if (itemIds.length) {
+      const { data: reviewData } = await supabase
+        .from('reviews')
+        .select('item_id, rating')
+        .in('item_id', itemIds);
+      const agg = {};
+      (reviewData || []).forEach((r) => {
+        if (!agg[r.item_id]) agg[r.item_id] = { sum: 0, count: 0 };
+        agg[r.item_id].sum += Number(r.rating) || 0;
+        agg[r.item_id].count += 1;
+      });
+      const map = new Map();
+      Object.keys(agg).forEach((k) =>
+        map.set(k, { avg: agg[k].sum / agg[k].count, count: agg[k].count })
+      );
+      setRatingsMap(map);
+    }
     
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
@@ -209,6 +230,18 @@ export default function Explore() {
             <Text numberOfLines={1} style={styles.cardTitle}>{item.title}</Text>
             {item.description && <Text numberOfLines={1} style={styles.cardDescription}>{item.description}</Text>}
             {item.price_per_day != null && <Text style={styles.cardPrice}>Rent from £{Number(item.price_per_day).toFixed(2)}</Text>}
+            {(() => {
+              const rating = ratingsMap.get(item.id);
+              if (!rating) return null;
+              return (
+                <View style={[styles.row, { marginTop: 4 }]}>
+                  <Ionicons name="star" size={12} color={colors.yellow} />
+                  <Text style={styles.cardDescription}>
+                    {rating.avg.toFixed(1)} ({rating.count})
+                  </Text>
+                </View>
+              );
+            })()}
           </View>
         </TouchableOpacity>
       </Card>
@@ -256,6 +289,8 @@ export default function Explore() {
               <TextInput value={filterPriceMin} onChangeText={setFilterPriceMin} keyboardType="numeric" placeholder="Min" style={[styles.input, { flex: 1 }]} />
               <TextInput value={filterPriceMax} onChangeText={setFilterPriceMax} keyboardType="numeric" placeholder="Max" style={[styles.input, { flex: 1 }]} />
             </View>
+
+
 
             <TouchableOpacity onPress={() => { setFilterCategory(''); setFilterSize(''); setFilterPriceMin(''); setFilterPriceMax(''); }}>
               <Label>Clear all filters</Label>
