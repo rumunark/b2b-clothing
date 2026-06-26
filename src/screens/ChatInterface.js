@@ -57,14 +57,13 @@ const chatStyles = StyleSheet.create({
   sendButtonText: { color: colors.black, fontWeight: 'bold', fontSize: 18 },
 
   // ── Confirmation banner ──
+  // ── Confirmation banner (full-width, opaque → seamless with header) ──
   banner: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    paddingVertical: 12,
+    backgroundColor: colors.navy,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    margin: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.yellow,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   bannerText: { color: colors.white, fontSize: 15, fontWeight: '600', textAlign: 'center', marginBottom: 10 },
   bannerButton: { backgroundColor: colors.yellow, paddingVertical: 10, borderRadius: 20, alignItems: 'center' },
@@ -85,6 +84,7 @@ export default function ChatInterface({ route, navigation }) {
   // ── Rental lifecycle state ──
   const [request, setRequest] = useState(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [statusReady, setStatusReady] = useState(false);
   const promptedRef = useRef(false);
 
   const flatListRef = useRef(null);
@@ -171,8 +171,8 @@ export default function ChatInterface({ route, navigation }) {
 
     const { data: req } = await supabase
       .from('requests').select('*').eq('id', requestId).single();
-    setRequest(req);
 
+    let reviewed = false;
     if (req && user.id === req.buyer_id && item?.id) {
       const { data: existingReview } = await supabase
         .from('reviews')
@@ -180,8 +180,13 @@ export default function ChatInterface({ route, navigation }) {
         .eq('buyer_id', user.id)
         .eq('item_id', item.id)
         .maybeSingle();
-      setReviewSubmitted(!!existingReview);
+      reviewed = !!existingReview;
     }
+
+    // Set together so the prompt never sees a stale reviewSubmitted
+    setRequest(req);
+    setReviewSubmitted(reviewed);
+    setStatusReady(true);
   }, [requestId, item?.id]);
 
   useFocusEffect(useCallback(() => { loadStatus(); }, [loadStatus]));
@@ -242,6 +247,7 @@ export default function ChatInterface({ route, navigation }) {
 
   // ── One-time review prompt when rental completes ──
   useEffect(() => {
+    if (!statusReady) return;
     if (isCompleted && isBuyer && !reviewSubmitted && !promptedRef.current) {
       promptedRef.current = true;
       Alert.alert(
@@ -253,7 +259,7 @@ export default function ChatInterface({ route, navigation }) {
         ]
       );
     }
-  }, [isCompleted, isBuyer, reviewSubmitted]);
+  }, [statusReady, isCompleted, isBuyer, reviewSubmitted]);
 
   // ── Banner renderer ──
   const renderBanner = () => {
