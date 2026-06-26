@@ -29,6 +29,10 @@ export default function ProfileScreen({ navigation }) {
   const [stripeStatus, setStripeStatus] = useState({ connected: false, onboarding_complete: false });
   const [stripeLoading, setStripeLoading] = useState(false);
 
+  // ── Rating state ──
+  const [ratingAvg, setRatingAvg] = useState(0);
+  const [ratingCount, setRatingCount] = useState(0);
+
   const awaitingStripeReturn = useRef(false);
 
   const loadProfile = useCallback(async () => {
@@ -52,7 +56,6 @@ export default function ProfileScreen({ navigation }) {
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const yyyy = d.getFullYear();
       setDob(`${dd}/${mm}/${yyyy}`);
-
       const today = new Date();
       let years = today.getFullYear() - d.getFullYear();
       const m = today.getMonth() - d.getMonth();
@@ -83,6 +86,16 @@ export default function ProfileScreen({ navigation }) {
       .select('id', { count: 'exact', head: true })
       .eq('renter_id', user.id);
     setNumRented(rentedCount ?? 0);
+
+    // ── Fetch reviews of this user as a seller ──
+    const { data: revs } = await supabase
+      .from('reviews')
+      .select('rating')
+      .eq('seller_id', user.id);
+    const count = revs?.length ?? 0;
+    const avg = count ? revs.reduce((s, r) => s + (Number(r.rating) || 0), 0) / count : 0;
+    setRatingAvg(avg);
+    setRatingCount(count);
   }, []);
 
   useFocusEffect(
@@ -126,7 +139,6 @@ export default function ProfileScreen({ navigation }) {
 
   const renderListing = ({ item }) => {
     const thumbnail = item.image_url || (Array.isArray(item.images) && item.images[0]) || null;
-
     return (
       <TouchableOpacity
         style={styles.listItemContainer}
@@ -151,8 +163,7 @@ export default function ProfileScreen({ navigation }) {
 
   const ProfileHeader = (
     <>
-      <View 
-        style={styles.headerPanel}>
+      <View style={styles.headerPanel}>
         {/* Profile Info Row */}
         <View style={[styles.row, { alignItems: 'center' }]}>
           {avatarUrl ? (
@@ -172,7 +183,7 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Stats Row */}
+        {/* Stats Row (Listed · Rented · Rating) */}
         <View style={[styles.row, { marginTop: 16, width: '100%' }]}>
           <View style={[styles.chip, { flex: 1, alignItems: 'center' }]}>
             <Text style={styles.chipText}>{numListed}</Text>
@@ -182,23 +193,32 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.chipText}>{numRented}</Text>
             <Text style={[styles.chipText, { fontSize: 11 }]}>Rented</Text>
           </View>
+          <View style={[styles.chip, { flex: 1, alignItems: 'center' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="star" size={14} color={colors.yellow} />
+              <Text style={[styles.chipText, { marginLeft: 4 }]}>
+                {ratingCount > 0 ? ratingAvg.toFixed(1) : '—'}
+              </Text>
+            </View>
+            <Text style={[styles.chipText, { fontSize: 11 }]}>
+              {ratingCount > 0 ? `${ratingCount} review${ratingCount !== 1 ? 's' : ''}` : 'No reviews'}
+            </Text>
+          </View>
         </View>
 
-        <View style={[styles.row, { marginTop: 16}]}>
-            <Button onPress={() => navigation.navigate('EditProfile')} size="md" style={{ flex: 1 }}>
-              Edit profile
-            </Button>
-            <Button onPress={stripeStatus.onboarding_complete ? () => {} : handleConnectStripe} size="md" style={{ flex: 1 }}>
-              {stripeStatus.onboarding_complete 
-                ? 'Stripe Connected' 
-                : stripeStatus.connected 
-                ? 'Stripe Incomplete' 
-                : 'Connect Stripe'}
-            </Button>
+        <View style={[styles.row, { marginTop: 16 }]}>
+          <Button onPress={() => navigation.navigate('EditProfile')} size="md" style={{ flex: 1 }}>
+            Edit profile
+          </Button>
+          <Button onPress={stripeStatus.onboarding_complete ? () => {} : handleConnectStripe} size="md" style={{ flex: 1 }}>
+            {stripeStatus.onboarding_complete
+              ? 'Stripe Connected'
+              : stripeStatus.connected
+              ? 'Stripe Incomplete'
+              : 'Connect Stripe'}
+          </Button>
         </View>
       </View>
-
-
     </>
   );
 
@@ -206,27 +226,25 @@ export default function ProfileScreen({ navigation }) {
     <Background>
       {ProfileHeader}
       <View style={styles.container}>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderListing}
-        contentContainerStyle={{ paddingBottom: insets.bottom * 2 }}
-        ListHeaderComponent={
-          <Text style={[styles.screenTitle, { marginBottom : 8}]}>
-            Your Listings
-          </Text>
-        }
-        ListEmptyComponent={
-          <Text style={[styles.body, { textAlign: 'center', marginTop: 16, marginHorizontal: 16 }]}>
-            You haven't listed any items yet.
-          </Text>
-        }
-        ListFooterComponent={
-          <View style={{ marginTop: 24, marginBottom: 24, alignItems: 'center' }}>
-            <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
-          </View>
-        }
-      />
+        <FlatList
+          data={items}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderListing}
+          contentContainerStyle={{ paddingBottom: insets.bottom * 2 }}
+          ListHeaderComponent={
+            <Text style={[styles.screenTitle, { marginBottom: 8 }]}>Your Listings</Text>
+          }
+          ListEmptyComponent={
+            <Text style={[styles.body, { textAlign: 'center', marginTop: 16, marginHorizontal: 16 }]}>
+              You haven't listed any items yet.
+            </Text>
+          }
+          ListFooterComponent={
+            <View style={{ marginTop: 24, marginBottom: 24, alignItems: 'center' }}>
+              <Text onPress={() => supabase.auth.signOut()} style={styles.body}>Sign out</Text>
+            </View>
+          }
+        />
       </View>
     </Background>
   );

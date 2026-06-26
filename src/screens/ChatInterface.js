@@ -85,7 +85,6 @@ export default function ChatInterface({ route, navigation }) {
   const [request, setRequest] = useState(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [statusReady, setStatusReady] = useState(false);
-  const promptedRef = useRef(false);
 
   const flatListRef = useRef(null);
   const keyboardPadding = useRef(new Animated.Value(insets.bottom)).current;
@@ -244,22 +243,6 @@ export default function ChatInterface({ route, navigation }) {
       itemTitle: item?.title,
     });
   };
-
-  // ── One-time review prompt when rental completes ──
-  useEffect(() => {
-    if (!statusReady) return;
-    if (isCompleted && isBuyer && !reviewSubmitted && !promptedRef.current) {
-      promptedRef.current = true;
-      Alert.alert(
-        'Rental Complete',
-        'Would you like to leave a review for this item?',
-        [
-          { text: 'Later', style: 'cancel' },
-          { text: 'Leave Review', onPress: goToReview },
-        ]
-      );
-    }
-  }, [statusReady, isCompleted, isBuyer, reviewSubmitted]);
 
   // ── Banner renderer ──
   const renderBanner = () => {
